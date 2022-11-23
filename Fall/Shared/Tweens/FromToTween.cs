@@ -2,54 +2,42 @@ using OpenTK.Mathematics;
 
 namespace Fall.Shared.Tweens
 {
-    public class from_to_tween : base_tween
+  public class from_to_tween : base_tween
+  {
+    public animations.animation Animation;
+    public float From;
+    public float To;
+
+    public from_to_tween(animations.animation animation, float from, float to, float duration)
     {
-        public animations.animation animation;
-        public float from;
-        public float to;
-
-        public from_to_tween(animations.animation animation, float from, float to, float duration)
-        {
-            this.animation = animation;
-            lastActivation = Environment.TickCount;
-            this.from = from;
-            this.to = to;
-            base.duration = duration;
-        }
-
-        public override float output()
-        {
-            if (Environment.TickCount < lastActivation)
-            {
-                return from;
-            }
-
-            if (Environment.TickCount > lastActivation + duration)
-            {
-                return to;
-            }
-            
-            return MathHelper.Lerp(from, to, animation(duration, Environment.TickCount - lastActivation));
-        }
-
-        public override float output_at(float time)
-        {
-            if (time < lastActivation)
-            {
-                return from;
-            }
-
-            if (time > lastActivation + duration)
-            {
-                return to;
-            }
-
-            return MathHelper.Lerp(from, to, animation(duration, time - lastActivation));
-        }
-
-        public override bool done()
-        {
-            return Environment.TickCount - lastActivation > duration;
-        }
+      Animation = animation;
+      LastActivation = Environment.TickCount;
+      From = from;
+      To = to;
+      Duration = duration;
     }
+
+    public override float Output()
+    {
+      if (Environment.TickCount < LastActivation) return From;
+
+      if (Environment.TickCount > LastActivation + Duration) return To;
+
+      return MathHelper.Lerp(From, To, Animation(Duration, Environment.TickCount - LastActivation));
+    }
+
+    public override float output_at(float time)
+    {
+      if (time < LastActivation) return From;
+
+      if (time > LastActivation + Duration) return To;
+
+      return MathHelper.Lerp(From, To, Animation(Duration, time - LastActivation));
+    }
+
+    public override bool Done()
+    {
+      return Environment.TickCount - LastActivation > Duration;
+    }
+  }
 }

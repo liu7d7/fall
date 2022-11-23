@@ -9,20 +9,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="OpenTK" Version="4.7.4" />
-      <PackageReference Include="SimplexNoise" Version="2.0.0" />
-      <PackageReference Include="StbImageSharp" Version="2.27.12" />
-      <PackageReference Include="StbTrueTypeSharp" Version="1.26.10" />
+        <PackageReference Include="OpenTK" Version="4.7.4" />
+        <PackageReference Include="SimplexNoise" Version="2.0.0" />
+        <PackageReference Include="StbImageSharp" Version="2.27.12" />
+        <PackageReference Include="StbTrueTypeSharp" Version="1.26.10" />
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Resource\Font\Poppins-SemiBold.ttf" />
+        <None Remove="Resource\Font\Poppins-SemiBold.ttf" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Game\Components" />
-      <Folder Include="Resource\Music" />
-      <Folder Include="Resource\Texture" />
+        <Folder Include="Game\Components" />
+        <Folder Include="Resource\Music" />
+        <Folder Include="Resource\Texture" />
     </ItemGroup>
 
 </Project>

@@ -1,7 +1,6 @@
 namespace Fall.Shared
 {
-    public static class sprites
-    {
-
-    }
+  public static class sprites
+  {
+  }
 }

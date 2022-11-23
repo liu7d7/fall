@@ -1,28 +1,28 @@
 namespace Fall.Shared
 {
-    public static class ticker
+  public static class ticker
+  {
+    public static float TickTime;
+    public static float TickDelta;
+    public static float LastFrame;
+    private static long _start;
+    private static float _prevTimeMs;
+
+    public static void Init()
     {
-        public static float tickTime;
-        public static float tickDelta;
-        public static float lastFrame;
-        private static long _start;
-        private static float _prevTimeMs;
-
-        public static void init()
-        {
-            _start = Environment.TickCount;
-            tickTime = 50.0f;
-        }
-
-        public static int update()
-        {
-            float timeMillis = Environment.TickCount - _start;
-            lastFrame = (timeMillis - _prevTimeMs) / tickTime;
-            _prevTimeMs = timeMillis;
-            tickDelta += lastFrame;
-            int i = (int) tickDelta;
-            tickDelta -= i;
-            return i;
-        }
+      _start = Environment.TickCount;
+      TickTime = 50.0f;
     }
+
+    public static int Update()
+    {
+      float timeMillis = Environment.TickCount - _start;
+      LastFrame = (timeMillis - _prevTimeMs) / TickTime;
+      _prevTimeMs = timeMillis;
+      TickDelta += LastFrame;
+      int i = (int)TickDelta;
+      TickDelta -= i;
+      return i;
+    }
+  }
 }

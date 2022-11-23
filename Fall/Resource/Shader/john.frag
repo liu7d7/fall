@@ -31,7 +31,7 @@ void main() {
         vec3 diffuse = diff * mix(lightColor, vec3(1.0), vec3(diff)) * 0.12;
 
         vec4 result = vec4(ambient + diffuse, 1.0) * texture(_tex0, v_TexCoords).rgba;
-        color = vec4(result) * v_Color; 
+        color = vec4(result) * v_Color;
     } else {
         color = texture(_tex0, v_TexCoords).rgba * v_Color;
     }

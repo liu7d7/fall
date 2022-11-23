@@ -28,35 +28,22 @@ float depthAt(vec2 pos) {
     return linearize_depth(depth, 0.1, 38.4);
 }
 
-int shouldOutlineMemo[7][7] = {
-    {-1, -1, -1, -1, -1, -1, -1},
-    {-1, -1, -1, -1, -1, -1, -1},
-    {-1, -1, -1, -1, -1, -1, -1},
-    {-1, -1, -1, -1, -1, -1, -1},
-    {-1, -1, -1, -1, -1, -1, -1},
-    {-1, -1, -1, -1, -1, -1, -1},
-    {-1, -1, -1, -1, -1, -1, -1},
-};
-
-const float sqrt2 = 1.0 / sqrt(2.0);
+const float sqrt2 = 1.0 / sqrt(2.);
 
 int shouldOutline(vec2 pos, vec4 center, float depth) {
-    ivec2 pos1 = ivec2(pos - v_Pos);
-    pos1 += int(_width * sqrt2);
-    if (shouldOutlineMemo[int(pos1.x)][int(pos1.y)] != -1) {
-        return shouldOutlineMemo[int(pos1.x)][int(pos1.y)];
-    }
+    vec2 oneTexel = 1. / _screenSize;
     float diag = _width * sqrt2;
-    vec2 corners[8] = { (pos.xy - diag) / _screenSize,
-                        (vec2(pos.x + diag, pos.y - diag)) / _screenSize,
-                        (vec2(pos.x - diag, pos.y + diag)) / _screenSize,
-                        (pos.xy + diag) / _screenSize,
-                        (vec2(pos.x - _width, pos.y)) / _screenSize,
-                        (vec2(pos.x + _width, pos.y)) / _screenSize,
-                        (vec2(pos.x, pos.y - _width)) / _screenSize,
-                        (vec2(pos.x, pos.y + _width)) / _screenSize };
+    vec2 corners[8] = {
+    (pos.xy - diag) * oneTexel,
+    (vec2(pos.x + diag, pos.y - diag)) * oneTexel,
+    (vec2(pos.x - diag, pos.y + diag)) * oneTexel,
+    (pos.xy + diag) * oneTexel,
+    (vec2(pos.x - _width, pos.y)) * oneTexel,
+    (vec2(pos.x + _width, pos.y)) * oneTexel,
+    (vec2(pos.x, pos.y - _width)) * oneTexel,
+    (vec2(pos.x, pos.y + _width)) * oneTexel
+    };
     float diff;
-    float maxDiff = 0;
     for (int i = 0; i < 8; i++) {
         if (corners[i].x < 0 || corners[i].x > 1 || corners[i].y < 0 || corners[i].y > 1) {
             continue;
@@ -70,53 +57,28 @@ int shouldOutline(vec2 pos, vec4 center, float depth) {
             + abs(center.g - texture(_tex0, corners[i]).g)
             + abs(center.b - texture(_tex0, corners[i]).b);
         }
-        if (abs(depth - depthAt(corners[i])) > _depthThreshold) {
-            shouldOutlineMemo[int(pos1.x)][int(pos1.y)] = 2;
-            return 2;
-        }
-        if (diff > maxDiff) {
-            maxDiff = diff;
-            if (maxDiff > _threshold / 2.0) {
-                break;
-            }
+        if (abs(depth - depthAt(corners[i])) > _depthThreshold || diff > _threshold) {
+            return 1;
         }
     }
-    int ret = maxDiff > _threshold / 2.0 ? 1 : 0;
-    shouldOutlineMemo[int(pos1.x)][int(pos1.y)] = ret;
-    return ret;
+    return 0;
 }
 
 void main() {
+    vec2 oneTexel = 1. / _screenSize;
     vec4 center = texture(_tex0, v_TexCoords);
-    float depth = depthAt(v_TexCoords);
-    int o = shouldOutline(v_Pos, center, depth);
-    int o2[4] = { shouldOutline(v_Pos + vec2(-1, -1), center, depth), 
-                   shouldOutline(v_Pos + vec2(1, -1), center, depth), 
-                   shouldOutline(v_Pos + vec2(-1, 1), center, depth), 
-                   shouldOutline(v_Pos + vec2(1, 1), center, depth) };
-    float o3 = 0;
-    if (_glow == 1) {
-        for (int i = 0; i < 4; i++) {
-            if (o2[i] == 1 || o2[i] == 2) {
-                o3 += 0.05;
-            }
-        }
-    }
+    int o = shouldOutline(v_Pos, center, depthAt(v_TexCoords));
     if (_blackAndWhite == 1) {
-        if (o == 1 || _diffDepthCol == 0 && o == 2) {
+        if (o == 1) {
             fragColor = _outlineColor;
-        } else if (o == 2) {
-            fragColor = _depthOutlineColor;
         } else {
-            fragColor = mix(_otherColor, _outlineColor, vec4(o3));
+            fragColor = _otherColor;
         }
     } else {
-        if (o == 1 || _diffDepthCol == 0 && o == 2) {
+        if (o == 1) {
             fragColor = _outlineColor;
-        } else if (o == 2) {
-            fragColor = _depthOutlineColor;
         } else {
-            fragColor = mix(center, _outlineColor, vec4(o3));
+            fragColor = center;
         }
     }
 }
