@@ -11,7 +11,7 @@ namespace Fall.Engine
     private readonly shader _shader;
     private readonly bool _static;
     private readonly vao _vao;
-    private readonly vbo _vbo;
+    public readonly vbo Vbo;
     private bool _building;
     private int _index;
     private int _vertex;
@@ -21,8 +21,8 @@ namespace Fall.Engine
       _drawMode = drawMode;
       _shader = shader;
       int stride = attribs.Sum(attrib => (int)attrib * sizeof(float));
-      _vbo = new vbo(stride * drawMode.Size * sizeof(float), @static);
-      _vbo.Bind();
+      Vbo = new vbo(stride * drawMode.Size * sizeof(float), @static);
+      Vbo.Bind();
       _ibo = new ibo(drawMode.Size * 128 * sizeof(float), @static);
       _ibo.Bind();
       _vao = new vao(attribs);
@@ -39,29 +39,29 @@ namespace Fall.Engine
 
     public mesh Float1(float p0)
     {
-      _vbo.Put(p0);
+      Vbo.Put(p0);
       return this;
     }
 
     public mesh Float2(float p0, float p1)
     {
-      _vbo.Put(p0);
-      _vbo.Put(p1);
+      Vbo.Put(p0);
+      Vbo.Put(p1);
       return this;
     }
 
     public mesh Float2(Vector2 p0)
     {
-      _vbo.Put(p0.X);
-      _vbo.Put(p0.Y);
+      Vbo.Put(p0.X);
+      Vbo.Put(p0.Y);
       return this;
     }
 
     public mesh Float3(float p0, float p1, float p2)
     {
-      _vbo.Put(p0);
-      _vbo.Put(p1);
-      _vbo.Put(p2);
+      Vbo.Put(p0);
+      Vbo.Put(p1);
+      Vbo.Put(p2);
       return this;
     }
 
@@ -69,26 +69,26 @@ namespace Fall.Engine
     {
       Vector4 pos = new(p0, p1, p2, 1);
       pos.Transform(transform);
-      _vbo.Put(pos.X);
-      _vbo.Put(pos.Y);
-      _vbo.Put(pos.Z);
+      Vbo.Put(pos.X);
+      Vbo.Put(pos.Y);
+      Vbo.Put(pos.Z);
       return this;
     }
 
     public mesh Float3(Vector3 p0)
     {
-      _vbo.Put(p0.X);
-      _vbo.Put(p0.Y);
-      _vbo.Put(p0.Z);
+      Vbo.Put(p0.X);
+      Vbo.Put(p0.Y);
+      Vbo.Put(p0.Z);
       return this;
     }
 
     public mesh Float4(float p0, float p1, float p2, float p3)
     {
-      _vbo.Put(p0);
-      _vbo.Put(p1);
-      _vbo.Put(p2);
-      _vbo.Put(p3);
+      Vbo.Put(p0);
+      Vbo.Put(p1);
+      Vbo.Put(p2);
+      Vbo.Put(p3);
       return this;
     }
 
@@ -141,7 +141,7 @@ namespace Fall.Engine
       if (_building) throw new Exception("Already building");
       if (!_static)
       {
-        _vbo.Clear();
+        Vbo.Clear();
         _ibo.Clear();
       }
 
@@ -156,13 +156,13 @@ namespace Fall.Engine
 
       if (_index > 0)
       {
-        _vbo.Upload();
+        Vbo.Upload();
         _ibo.Upload();
       }
 
       if (_static)
       {
-        _vbo.Clear();
+        Vbo.Clear();
         _ibo.Clear();
       }
 
@@ -184,8 +184,31 @@ namespace Fall.Engine
       _shader?.SetDefaults();
       _vao.Bind();
       _ibo.Bind();
-      _vbo.Bind();
-      GL.DrawElements(_drawMode.as_gl(), _index, DrawElementsType.UnsignedInt, 0);
+      Vbo.Bind();
+      GL.DrawElements(_drawMode.AsGl(), _index, DrawElementsType.UnsignedInt, 0);
+      ibo.Unbind();
+      vbo.Unbind();
+      vao.Unbind();
+      gl_state_manager.RestoreState();
+    }
+    
+    public void RenderInstanced(int numInstances)
+    {
+      if (_building) End();
+
+      if (_index <= 0 || numInstances <= 0) return;
+      gl_state_manager.SaveState();
+      gl_state_manager.EnableBlend();
+      if (render_system.Rendering3d)
+        gl_state_manager.EnableDepth();
+      else
+        gl_state_manager.DisableDepth();
+      _shader?.Bind();
+      _shader?.SetDefaults();
+      _vao.Bind();
+      _ibo.Bind();
+      Vbo.Bind();
+      GL.DrawElementsInstanced(_drawMode.AsGlPrim(), _index, DrawElementsType.UnsignedInt, IntPtr.Zero, numInstances);
       ibo.Unbind();
       vbo.Unbind();
       vao.Unbind();
@@ -194,16 +217,18 @@ namespace Fall.Engine
 
     public sealed class draw_mode
     {
-      public static readonly draw_mode LINE = new(2, BeginMode.Lines);
-      public static readonly draw_mode TRIANGLE = new(3, BeginMode.Triangles);
-      public static readonly draw_mode TRIANGLE_STRIP = new(2, BeginMode.TriangleStrip);
+      public static readonly draw_mode LINE = new(2, BeginMode.Lines, PrimitiveType.Lines);
+      public static readonly draw_mode TRIANGLE = new(3, BeginMode.Triangles, PrimitiveType.Triangles);
+      public static readonly draw_mode TRIANGLE_STRIP = new(2, BeginMode.TriangleStrip, PrimitiveType.TriangleStrip);
       private readonly BeginMode _mode;
+      private readonly PrimitiveType _prim;
       public readonly int Size;
 
-      private draw_mode(int size, BeginMode mode)
+      private draw_mode(int size, BeginMode mode, PrimitiveType prim)
       {
         Size = size;
         _mode = mode;
+        _prim = prim;
       }
 
       public override bool Equals(object obj)
@@ -218,9 +243,14 @@ namespace Fall.Engine
         return _mode.GetHashCode();
       }
 
-      public BeginMode as_gl()
+      public BeginMode AsGl()
       {
         return _mode;
+      }
+      
+      public PrimitiveType AsGlPrim()
+      {
+        return _prim;
       }
     }
   }

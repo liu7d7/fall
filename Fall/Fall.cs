@@ -188,11 +188,8 @@ namespace Fall
       render_system.UpdateLookAt(Player);
       render_system.UpdateProjection();
 
-      render_system.RECT.Bind(TextureUnit.Texture0);
-      render_system.MESH.Begin();
       World.Render();
-      render_system.MESH.Render();
-      texture.Unbind();
+      model3d.Draw();
 
       render_system.FRAME.Bind();
 

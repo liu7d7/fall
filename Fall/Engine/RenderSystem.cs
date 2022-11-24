@@ -11,7 +11,6 @@ namespace Fall.Engine
     private const float _depthThreshold = 0.8f;
     private static readonly shader _john = new("Resource/Shader/john.vert", "Resource/Shader/john.frag");
     public static readonly shader BASIC = new("Resource/Shader/basic.vert", "Resource/Shader/basic.frag");
-    private static readonly shader _cubemap = new("Resource/Shader/cubemap.vert", "Resource/Shader/cubemap.frag");
 
     private static readonly shader
       _pixel = new("Resource/Shader/postprocess.vert", "Resource/Shader/pixelate.frag");
@@ -27,7 +26,6 @@ namespace Fall.Engine
     private static readonly Matrix4[] _model = new Matrix4[7];
     private static int _modelIdx;
     public static bool RenderingRed;
-    public static readonly texture RECT = texture.load_from_file("Resource/Texture/rect.png");
 
     public static readonly mesh MESH = new(mesh.draw_mode.TRIANGLE, _john, false, vao.attrib.FLOAT3,
       vao.attrib.FLOAT3,

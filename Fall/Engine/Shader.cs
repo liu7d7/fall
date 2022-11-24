@@ -86,65 +86,35 @@ namespace Fall.Engine
     {
       return GL.GetAttribLocation(_handle, attribName);
     }
-
-    /// <summary>
-    ///   Set a uniform int on this shader.
-    /// </summary>
-    /// <param name="name">The name of the uniform</param>
-    /// <param name="data">The data to set</param>
+    
     public void SetInt(string name, int data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
       Bind();
       GL.Uniform1(_uniformLocations[name], data);
     }
-
-    /// <summary>
-    ///   Set a uniform float on this shader.
-    /// </summary>
-    /// <param name="name">The name of the uniform</param>
-    /// <param name="data">The data to set</param>
+    
     public void SetFloat(string name, float data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
       Bind();
       GL.Uniform1(_uniformLocations[name], data);
     }
-
-    /// <summary>
-    ///   Set a uniform Matrix4 on this shader
-    /// </summary>
-    /// <param name="name">The name of the uniform</param>
-    /// <param name="data">The data to set</param>
-    /// <remarks>
-    ///   <para>
-    ///     The matrix is transposed before being sent to the shader.
-    ///   </para>
-    /// </remarks>
+    
     public void SetMatrix4(string name, Matrix4 data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
       Bind();
       GL.UniformMatrix4(_uniformLocations[name], true, ref data);
     }
-
-    /// <summary>
-    ///   Set a uniform Vector3 on this shader.
-    /// </summary>
-    /// <param name="name">The name of the uniform</param>
-    /// <param name="data">The data to set</param>
+    
     public void SetVector3(string name, Vector3 data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
       Bind();
       GL.Uniform3(_uniformLocations[name], data);
     }
-
-    /// <summary>
-    ///   Set a uniform Vector2 on this shader.
-    /// </summary>
-    /// <param name="name">The name of the uniform</param>
-    /// <param name="data">The data to set</param>
+    
     public void SetVector2(string name, Vector2 data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
@@ -152,11 +122,6 @@ namespace Fall.Engine
       GL.Uniform2(_uniformLocations[name], data);
     }
 
-    /// <summary>
-    ///   Set a uniform Vector2 on this shader.
-    /// </summary>
-    /// <param name="name">The name of the uniform</param>
-    /// <param name="data">The data to set</param>
     public void SetVector4(string name, Vector4 data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;

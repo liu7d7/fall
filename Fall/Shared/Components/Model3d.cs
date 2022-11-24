@@ -9,12 +9,16 @@ namespace Fall.Shared.Components
     private static readonly Dictionary<string, model3d> _components = new();
     private readonly Vector2[] _texCoords;
 
-    public readonly face[] Faces;
-
-    public readonly Vector3[] Vertices;
+    private readonly string _path;
+    private readonly face[] _faces;
+    private readonly Vector3[] _vertices;
+    private readonly shader _shader;
+    private readonly mesh _mesh;
+    private readonly List<instance_data> _instances = new();
 
     private model3d(string path, Dictionary<string, uint> colors)
     {
+      _path = path;
       uint mat = 0;
       List<face> faces = new();
       List<Vector3> vertices = new();
@@ -51,10 +55,12 @@ namespace Fall.Shared.Components
             string[] vt1 = parts[1].Split("/");
             string[] vt2 = parts[2].Split("/");
             string[] vt3 = parts[3].Split("/");
-            face face = new();
-            face[0] = new vertex_data(int.Parse(vt1[0]) - 1, int.Parse(vt1[1]) - 1);
-            face[1] = new vertex_data(int.Parse(vt2[0]) - 1, int.Parse(vt2[1]) - 1);
-            face[2] = new vertex_data(int.Parse(vt3[0]) - 1, int.Parse(vt3[1]) - 1);
+            face face = new face
+            {
+              [0] = new(int.Parse(vt1[0]) - 1, int.Parse(vt1[1]) - 1),
+              [1] = new(int.Parse(vt2[0]) - 1, int.Parse(vt2[1]) - 1),
+              [2] = new(int.Parse(vt3[0]) - 1, int.Parse(vt3[1]) - 1)
+            };
             face[0].Color = face[1].Color = face[2].Color = mat;
             face.Normal = normals[int.Parse(vt1[2]) - 1];
             faces.Add(face);
@@ -64,51 +70,67 @@ namespace Fall.Shared.Components
       }
 
       _components[path + colors.ContentToString()] = this;
-      Vertices = vertices.ToArray();
+      _vertices = vertices.ToArray();
       _texCoords = texCoords.ToArray();
-      Faces = faces.ToArray();
-      for (int i = 0; i < Faces.Length; i++) CalculateNormals(ref Faces[i]);
+      _faces = faces.ToArray();
+      for (int i = 0; i < _faces.Length; i++) CalculateNormals(ref _faces[i]);
+      
+      _mesh = new mesh(
+        mesh.draw_mode.TRIANGLE,
+        _shader = new shader("Resource/Shader/instanced.vert", "Resource/Shader/john.frag"),
+        false,
+        vao.attrib.FLOAT3,
+        vao.attrib.FLOAT3,
+        vao.attrib.FLOAT2,
+        vao.attrib.FLOAT4
+      );
+      ToMesh((0, 0, 0));
     }
 
     public void Scale(float scale)
     {
-      for (int i = 0; i < Vertices.Length; i++)
+      for (int i = 0; i < _vertices.Length; i++)
       {
-        Vertices[i].X *= scale;
-        Vertices[i].Y *= scale;
-        Vertices[i].Z *= scale;
+        _vertices[i].X *= scale;
+        _vertices[i].Y *= scale;
+        _vertices[i].Z *= scale;
       }
+      ToMesh((0, 0, 0));
     }
 
     public void Scale(float x, float y, float z)
     {
-      for (int i = 0; i < Vertices.Length; i++)
+      for (int i = 0; i < _vertices.Length; i++)
       {
-        Vertices[i].Y *= y;
-        Vertices[i].X *= x;
-        Vertices[i].Z *= z;
+        _vertices[i].Y *= y;
+        _vertices[i].X *= x;
+        _vertices[i].Z *= z;
       }
+      ToMesh((0, 0, 0));
     }
 
     public void FlipX()
     {
-      for (int i = 0; i < Vertices.Length; i++) Vertices[i].X *= -1;
+      for (int i = 0; i < _vertices.Length; i++) _vertices[i].X *= -1;
 
-      for (int i = 0; i < Faces.Length; i++) CalculateNormals(ref Faces[i]);
+      for (int i = 0; i < _faces.Length; i++) CalculateNormals(ref _faces[i]);
+      ToMesh((0, 0, 0));
     }
 
     public void FlipY()
     {
-      for (int i = 0; i < Vertices.Length; i++) Vertices[i].Y *= -1;
+      for (int i = 0; i < _vertices.Length; i++) _vertices[i].Y *= -1;
 
-      for (int i = 0; i < Faces.Length; i++) CalculateNormals(ref Faces[i]);
+      for (int i = 0; i < _faces.Length; i++) CalculateNormals(ref _faces[i]);
+      ToMesh((0, 0, 0));
     }
 
     public void FlipZ()
     {
-      for (int i = 0; i < Vertices.Length; i++) Vertices[i].Z *= -1;
+      for (int i = 0; i < _vertices.Length; i++) _vertices[i].Z *= -1;
 
-      for (int i = 0; i < Faces.Length; i++) CalculateNormals(ref Faces[i]);
+      for (int i = 0; i < _faces.Length; i++) CalculateNormals(ref _faces[i]);
+      ToMesh((0, 0, 0));
     }
 
     private float Fparse(string f)
@@ -118,31 +140,58 @@ namespace Fall.Shared.Components
 
     private void CalculateNormals(ref face face)
     {
-      Vector3 ab = Vertices[face[1].Pos] - Vertices[face[0].Pos];
-      Vector3 ac = Vertices[face[2].Pos] - Vertices[face[0].Pos];
+      Vector3 ab = _vertices[face[1].Pos] - _vertices[face[0].Pos];
+      Vector3 ac = _vertices[face[2].Pos] - _vertices[face[0].Pos];
       Vector3 normal = Vector3.Cross(ab, ac);
       normal.Normalize();
       face.Normal = normal;
     }
 
-    public void Render(Vector3 pos)
+    private void ToMesh(Vector3 pos)
     {
-      mesh mesh = render_system.MESH;
-      foreach (face face in Faces)
+      _mesh.Begin();
+      foreach (face face in _faces)
       {
-        Vector3 vt1 = Vertices[face[0].Pos];
-        Vector3 vt2 = Vertices[face[1].Pos];
-        Vector3 vt3 = Vertices[face[2].Pos];
+        Vector3 vt1 = _vertices[face[0].Pos];
+        Vector3 vt2 = _vertices[face[1].Pos];
+        Vector3 vt3 = _vertices[face[2].Pos];
         Vector2 uv1 = _texCoords[face[0].Uv];
         Vector2 uv2 = _texCoords[face[1].Uv];
         Vector2 uv3 = _texCoords[face[2].Uv];
-        int i1 = mesh.Float3(render_system.Model, vt1.X + pos.X, vt1.Y + pos.Y, vt1.Z + pos.Z)
-          .Float3(face.Normal).Float2(uv1).Float4(face[0].Color).Next();
-        int i2 = mesh.Float3(render_system.Model, vt2.X + pos.X, vt2.Y + pos.Y, vt2.Z + pos.Z)
-          .Float3(face.Normal).Float2(uv2).Float4(face[1].Color).Next();
-        int i3 = mesh.Float3(render_system.Model, vt3.X + pos.X, vt3.Y + pos.Y, vt3.Z + pos.Z)
-          .Float3(face.Normal).Float2(uv3).Float4(face[2].Color).Next();
-        mesh.Tri(i1, i2, i3);
+        int i1 = _mesh.Float3(vt1.X + pos.X, vt1.Y + pos.Y, vt1.Z + pos.Z).Float3(face.Normal).Float2(uv1).Float4(face[0].Color).Next();
+        int i2 = _mesh.Float3(vt2.X + pos.X, vt2.Y + pos.Y, vt2.Z + pos.Z).Float3(face.Normal).Float2(uv2).Float4(face[1].Color).Next();
+        int i3 = _mesh.Float3(vt3.X + pos.X, vt3.Y + pos.Y, vt3.Z + pos.Z).Float3(face.Normal).Float2(uv3).Float4(face[2].Color).Next();
+        _mesh.Tri(i1, i2, i3);
+      }
+      _mesh.End();
+    }
+
+    public void Render(Vector3 pos)
+    {
+      _instances.Add(new instance_data
+      {
+        model = render_system.Model,
+        translate = pos
+      });
+    }
+
+    public static void Draw()
+    {
+      foreach (KeyValuePair<string, model3d> model3d in _components)
+      {
+        shader shader = model3d.Value._shader;
+        mesh mesh = model3d.Value._mesh;
+        List<instance_data> instances = model3d.Value._instances;
+        int numInstances = instances.Count;
+        shader.Bind();
+        for (int i = 0; i < numInstances; i++)
+        {
+          shader.SetMatrix4($"_model[{i}]", instances[i].model);
+          shader.SetVector3($"_translate[{i}]", instances[i].translate);
+        }
+        mesh.RenderInstanced(numInstances);
+        shader.Unbind();
+        instances.Clear();
       }
     }
 
@@ -223,5 +272,11 @@ namespace Fall.Shared.Components
       get => _vertices[idx];
       set => _vertices[idx] = value;
     }
+  }
+
+  public struct instance_data
+  {
+    public Vector3 translate;
+    public Matrix4 model;
   }
 }
