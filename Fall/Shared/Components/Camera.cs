@@ -105,7 +105,6 @@ namespace Fall.Shared.Components
       if (_pos == null) return Matrix4.Identity;
 
       Vector3 pos = new(_pos.LerpedX, _pos.LerpedY, _pos.LerpedZ);
-      pos.Y += 4;
       Vector3 eye = pos - _front * 25;
       eye.Y = Math.Max(eye.Y, world.HeightAt((eye.X, eye.Z)) + 0.33f);
       Matrix4 lookAt = Matrix4.LookAt(eye, pos, _up);

@@ -9,6 +9,7 @@ namespace Fall.Engine
     private static int _active;
     private readonly int _handle;
     private readonly Dictionary<string, int> _uniformLocations;
+    private readonly List<int> _uniformArrayLocations;
 
     public shader(string vertPath, string fragPath)
     {
@@ -40,6 +41,7 @@ namespace Fall.Engine
       GL.GetProgram(_handle, GetProgramParameterName.ActiveUniforms, out int numberOfUniforms);
 
       _uniformLocations = new Dictionary<string, int>();
+      _uniformArrayLocations = new List<int>();
 
       for (int i = 0; i < numberOfUniforms; i++)
       {
@@ -47,6 +49,18 @@ namespace Fall.Engine
         int location = GL.GetUniformLocation(_handle, key);
         _uniformLocations.Add(key, location);
       }
+    }
+
+    public int ArrayUniform(string name, int size)
+    {
+      int b = _uniformArrayLocations.Count;
+      for (int i = 0; i < size; i++)
+      {
+        int key = GL.GetUniformLocation(_handle, $"{name}[{i}]");
+        _uniformArrayLocations.Add(key);
+      }
+
+      return b;
     }
 
     private static void CompileShader(int shader)
@@ -86,41 +100,21 @@ namespace Fall.Engine
     {
       return GL.GetAttribLocation(_handle, attribName);
     }
-
-    /// <summary>
-    ///   Set a uniform int on this shader.
-    /// </summary>
-    /// <param name="name">The name of the uniform</param>
-    /// <param name="data">The data to set</param>
+    
     public void SetInt(string name, int data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
       Bind();
       GL.Uniform1(_uniformLocations[name], data);
     }
-
-    /// <summary>
-    ///   Set a uniform float on this shader.
-    /// </summary>
-    /// <param name="name">The name of the uniform</param>
-    /// <param name="data">The data to set</param>
+    
     public void SetFloat(string name, float data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
       Bind();
       GL.Uniform1(_uniformLocations[name], data);
     }
-
-    /// <summary>
-    ///   Set a uniform Matrix4 on this shader
-    /// </summary>
-    /// <param name="name">The name of the uniform</param>
-    /// <param name="data">The data to set</param>
-    /// <remarks>
-    ///   <para>
-    ///     The matrix is transposed before being sent to the shader.
-    ///   </para>
-    /// </remarks>
+    
     public void SetMatrix4(string name, Matrix4 data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
@@ -128,23 +122,13 @@ namespace Fall.Engine
       GL.UniformMatrix4(_uniformLocations[name], true, ref data);
     }
 
-    /// <summary>
-    ///   Set a uniform Vector3 on this shader.
-    /// </summary>
-    /// <param name="name">The name of the uniform</param>
-    /// <param name="data">The data to set</param>
     public void SetVector3(string name, Vector3 data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
       Bind();
       GL.Uniform3(_uniformLocations[name], data);
     }
-
-    /// <summary>
-    ///   Set a uniform Vector2 on this shader.
-    /// </summary>
-    /// <param name="name">The name of the uniform</param>
-    /// <param name="data">The data to set</param>
+    
     public void SetVector2(string name, Vector2 data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
@@ -152,16 +136,23 @@ namespace Fall.Engine
       GL.Uniform2(_uniformLocations[name], data);
     }
 
-    /// <summary>
-    ///   Set a uniform Vector2 on this shader.
-    /// </summary>
-    /// <param name="name">The name of the uniform</param>
-    /// <param name="data">The data to set</param>
     public void SetVector4(string name, Vector4 data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
       Bind();
       GL.Uniform4(_uniformLocations[name], data);
+    }
+    
+    public void SetArrMatrix4(int index, Matrix4 data)
+    {
+      Bind();
+      GL.UniformMatrix4(_uniformArrayLocations[index], true, ref data);
+    }
+    
+    public void SetArrVector3(int index, Vector3 data)
+    {
+      Bind();
+      GL.Uniform3(_uniformArrayLocations[index], data);
     }
   }
 }

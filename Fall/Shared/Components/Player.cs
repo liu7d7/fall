@@ -14,6 +14,7 @@ namespace Fall.Shared.Components
     static player()
     {
       _icosphere = model3d.Read("icosphere", new Dictionary<string, uint>());
+      _icosphere.Scale(0.66f);
       _capeShader = new shader("Resource/Shader/cape.vert", "Resource/Shader/basic.frag");
     }
 
@@ -43,12 +44,7 @@ namespace Fall.Shared.Components
       Vector3 renderPos = objIn.LerpedPos + offset;
 
       // render head
-      render_system.Push();
-      render_system.Translate(-renderPos - (0f, 5.25f, 0f));
-      render_system.Scale(0.66f);
-      render_system.Translate(renderPos + (0f, 5.25f, 0f));
-      _icosphere.Render(renderPos + (0f, 5.25f, 0f));
-      render_system.Pop();
+      _icosphere.Render(renderPos - offset + (0f, 4.25f, 0f));
 
       float lyaw = objIn.Get<float_pos>().LerpedYaw + 180;
 

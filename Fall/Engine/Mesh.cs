@@ -185,7 +185,30 @@ namespace Fall.Engine
       _vao.Bind();
       _ibo.Bind();
       _vbo.Bind();
-      GL.DrawElements(_drawMode.as_gl(), _index, DrawElementsType.UnsignedInt, 0);
+      GL.DrawElements(_drawMode.AsGl(), _index, DrawElementsType.UnsignedInt, 0);
+      ibo.Unbind();
+      vbo.Unbind();
+      vao.Unbind();
+      gl_state_manager.RestoreState();
+    }
+    
+    public void RenderInstanced(int numInstances)
+    {
+      if (_building) End();
+
+      if (_index <= 0 || numInstances <= 0) return;
+      gl_state_manager.SaveState();
+      gl_state_manager.EnableBlend();
+      if (render_system.Rendering3d)
+        gl_state_manager.EnableDepth();
+      else
+        gl_state_manager.DisableDepth();
+      _shader?.Bind();
+      _shader?.SetDefaults();
+      _vao.Bind();
+      _ibo.Bind();
+      _vbo.Bind();
+      GL.DrawElementsInstanced(_drawMode.AsGlPrim(), _index, DrawElementsType.UnsignedInt, IntPtr.Zero, numInstances);
       ibo.Unbind();
       vbo.Unbind();
       vao.Unbind();
@@ -194,16 +217,18 @@ namespace Fall.Engine
 
     public sealed class draw_mode
     {
-      public static readonly draw_mode LINE = new(2, BeginMode.Lines);
-      public static readonly draw_mode TRIANGLE = new(3, BeginMode.Triangles);
-      public static readonly draw_mode TRIANGLE_STRIP = new(2, BeginMode.TriangleStrip);
+      public static readonly draw_mode LINE = new(2, BeginMode.Lines, PrimitiveType.Lines);
+      public static readonly draw_mode TRIANGLE = new(3, BeginMode.Triangles, PrimitiveType.Triangles);
+      public static readonly draw_mode TRIANGLE_STRIP = new(2, BeginMode.TriangleStrip, PrimitiveType.TriangleStrip);
       private readonly BeginMode _mode;
+      private readonly PrimitiveType _prim;
       public readonly int Size;
 
-      private draw_mode(int size, BeginMode mode)
+      private draw_mode(int size, BeginMode mode, PrimitiveType prim)
       {
         Size = size;
         _mode = mode;
+        _prim = prim;
       }
 
       public override bool Equals(object obj)
@@ -218,9 +243,14 @@ namespace Fall.Engine
         return _mode.GetHashCode();
       }
 
-      public BeginMode as_gl()
+      public BeginMode AsGl()
       {
         return _mode;
+      }
+      
+      public PrimitiveType AsGlPrim()
+      {
+        return _prim;
       }
     }
   }

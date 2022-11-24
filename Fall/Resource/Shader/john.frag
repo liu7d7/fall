@@ -5,15 +5,15 @@ out vec4 color;
 uniform sampler2D _tex0;
 uniform vec3 lightPos;
 uniform int doLighting;
+uniform int _renderingRed;
 
 in vec4 v_Color;
 in vec3 v_Normal;
 in vec2 v_TexCoords;
 in vec3 v_FragPos;
-flat in int v_RenderingRed;
 
 void main() {
-    if (v_RenderingRed == 1) {
+    if (_renderingRed == 1) {
         color = v_Color * vec4(1.0, 1.0, 1.0, texture(_tex0, v_TexCoords).r);
         return;
     }
@@ -33,6 +33,6 @@ void main() {
         vec4 result = vec4(ambient + diffuse, 1.0) * texture(_tex0, v_TexCoords).rgba;
         color = vec4(result) * v_Color;
     } else {
-        color = texture(_tex0, v_TexCoords).rgba * v_Color;
+        color = v_Color;
     }
 }
