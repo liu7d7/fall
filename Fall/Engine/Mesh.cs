@@ -11,7 +11,7 @@ namespace Fall.Engine
     private readonly shader _shader;
     private readonly bool _static;
     private readonly vao _vao;
-    public readonly vbo Vbo;
+    private readonly vbo _vbo;
     private bool _building;
     private int _index;
     private int _vertex;
@@ -21,8 +21,8 @@ namespace Fall.Engine
       _drawMode = drawMode;
       _shader = shader;
       int stride = attribs.Sum(attrib => (int)attrib * sizeof(float));
-      Vbo = new vbo(stride * drawMode.Size * sizeof(float), @static);
-      Vbo.Bind();
+      _vbo = new vbo(stride * drawMode.Size * sizeof(float), @static);
+      _vbo.Bind();
       _ibo = new ibo(drawMode.Size * 128 * sizeof(float), @static);
       _ibo.Bind();
       _vao = new vao(attribs);
@@ -39,29 +39,29 @@ namespace Fall.Engine
 
     public mesh Float1(float p0)
     {
-      Vbo.Put(p0);
+      _vbo.Put(p0);
       return this;
     }
 
     public mesh Float2(float p0, float p1)
     {
-      Vbo.Put(p0);
-      Vbo.Put(p1);
+      _vbo.Put(p0);
+      _vbo.Put(p1);
       return this;
     }
 
     public mesh Float2(Vector2 p0)
     {
-      Vbo.Put(p0.X);
-      Vbo.Put(p0.Y);
+      _vbo.Put(p0.X);
+      _vbo.Put(p0.Y);
       return this;
     }
 
     public mesh Float3(float p0, float p1, float p2)
     {
-      Vbo.Put(p0);
-      Vbo.Put(p1);
-      Vbo.Put(p2);
+      _vbo.Put(p0);
+      _vbo.Put(p1);
+      _vbo.Put(p2);
       return this;
     }
 
@@ -69,26 +69,26 @@ namespace Fall.Engine
     {
       Vector4 pos = new(p0, p1, p2, 1);
       pos.Transform(transform);
-      Vbo.Put(pos.X);
-      Vbo.Put(pos.Y);
-      Vbo.Put(pos.Z);
+      _vbo.Put(pos.X);
+      _vbo.Put(pos.Y);
+      _vbo.Put(pos.Z);
       return this;
     }
 
     public mesh Float3(Vector3 p0)
     {
-      Vbo.Put(p0.X);
-      Vbo.Put(p0.Y);
-      Vbo.Put(p0.Z);
+      _vbo.Put(p0.X);
+      _vbo.Put(p0.Y);
+      _vbo.Put(p0.Z);
       return this;
     }
 
     public mesh Float4(float p0, float p1, float p2, float p3)
     {
-      Vbo.Put(p0);
-      Vbo.Put(p1);
-      Vbo.Put(p2);
-      Vbo.Put(p3);
+      _vbo.Put(p0);
+      _vbo.Put(p1);
+      _vbo.Put(p2);
+      _vbo.Put(p3);
       return this;
     }
 
@@ -141,7 +141,7 @@ namespace Fall.Engine
       if (_building) throw new Exception("Already building");
       if (!_static)
       {
-        Vbo.Clear();
+        _vbo.Clear();
         _ibo.Clear();
       }
 
@@ -156,13 +156,13 @@ namespace Fall.Engine
 
       if (_index > 0)
       {
-        Vbo.Upload();
+        _vbo.Upload();
         _ibo.Upload();
       }
 
       if (_static)
       {
-        Vbo.Clear();
+        _vbo.Clear();
         _ibo.Clear();
       }
 
@@ -184,7 +184,7 @@ namespace Fall.Engine
       _shader?.SetDefaults();
       _vao.Bind();
       _ibo.Bind();
-      Vbo.Bind();
+      _vbo.Bind();
       GL.DrawElements(_drawMode.AsGl(), _index, DrawElementsType.UnsignedInt, 0);
       ibo.Unbind();
       vbo.Unbind();
@@ -207,7 +207,7 @@ namespace Fall.Engine
       _shader?.SetDefaults();
       _vao.Bind();
       _ibo.Bind();
-      Vbo.Bind();
+      _vbo.Bind();
       GL.DrawElementsInstanced(_drawMode.AsGlPrim(), _index, DrawElementsType.UnsignedInt, IntPtr.Zero, numInstances);
       ibo.Unbind();
       vbo.Unbind();

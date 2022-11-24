@@ -13,11 +13,11 @@ namespace Fall.Engine
     }
 
     private static int _active;
-    public readonly int Handle;
+    private readonly int _handle;
 
     public vao(params attrib[] attribs)
     {
-      Handle = GL.GenVertexArray();
+      _handle = GL.GenVertexArray();
       Bind();
       int stride = attribs.Sum(attrib => (int)attrib);
       int offset = 0;
@@ -34,9 +34,9 @@ namespace Fall.Engine
 
     public void Bind()
     {
-      if (Handle == _active) return;
-      GL.BindVertexArray(Handle);
-      _active = Handle;
+      if (_handle == _active) return;
+      GL.BindVertexArray(_handle);
+      _active = _handle;
     }
 
     public static void Unbind()

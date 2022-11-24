@@ -10,7 +10,7 @@ out vec3 v_Normal;
 out vec2 v_TexCoords;
 out vec3 v_FragPos;
 
-const int MAX = 128;
+const int MAX = 160;
 
 uniform mat4 _proj;
 uniform mat4 _lookAt;

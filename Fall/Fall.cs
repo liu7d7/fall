@@ -1,4 +1,5 @@
 using System.Drawing;
+using System.Runtime.InteropServices;
 using Fall.Engine;
 using Fall.Shared;
 using Fall.Shared.Components;
@@ -19,8 +20,10 @@ namespace Fall
     public static float MouseDx, MouseDy, MouseX, MouseY;
     public static int Ticks;
     public static int InView;
-
-    private readonly Color4 c = colors.NextColor();
+    
+    private static readonly DebugProc _debugProcCallback = DebugCallback;
+    private static GCHandle _debugProcCallbackHandle;
+    private readonly Color4 _c = colors.NextColor();
     private readonly rolling_avg _mspf = new(300);
     private int _lastInquiry;
     private int _memUsage;
@@ -33,6 +36,21 @@ namespace Fall
       GL.Enable(EnableCap.Multisample);
       render_system.Resize();
       CreateWorld();
+      
+      _debugProcCallbackHandle = GCHandle.Alloc(_debugProcCallback);
+      GL.DebugMessageCallback(_debugProcCallback, IntPtr.Zero);
+      GL.Enable(EnableCap.DebugOutput);
+      GL.Enable(EnableCap.DebugOutputSynchronous);
+    }
+    
+    private static void DebugCallback(DebugSource source, DebugType type, int id,
+      DebugSeverity severity, int length, IntPtr message, IntPtr userParam)
+    {
+      string messageString = Marshal.PtrToStringAnsi(message, length);
+      Console.WriteLine($"{severity} {type} | {messageString}");
+
+      if (type == DebugType.DebugTypeError)
+        throw new Exception(messageString);
     }
 
     private static void CreateWorld()
@@ -178,7 +196,7 @@ namespace Fall
       Player.Get<camera>().update_camera_vectors();
       
       fbo.Unbind();
-      GL.ClearColor(c);
+      GL.ClearColor(_c);
       GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
       render_system.FRAME.ClearColor();
       render_system.FRAME.ClearDepth();

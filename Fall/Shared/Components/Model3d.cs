@@ -15,6 +15,8 @@ namespace Fall.Shared.Components
     private readonly shader _shader;
     private readonly mesh _mesh;
     private readonly List<instance_data> _instances = new();
+    private readonly int _matBase;
+    private readonly int _transBase;
 
     private model3d(string path, Dictionary<string, uint> colors)
     {
@@ -84,6 +86,8 @@ namespace Fall.Shared.Components
         vao.attrib.FLOAT2,
         vao.attrib.FLOAT4
       );
+      _matBase = _shader.ArrayUniform("_model", 128);
+      _transBase = _shader.ArrayUniform("_translate", 128);
       ToMesh((0, 0, 0));
     }
 
@@ -186,8 +190,8 @@ namespace Fall.Shared.Components
         shader.Bind();
         for (int i = 0; i < numInstances; i++)
         {
-          shader.SetMatrix4($"_model[{i}]", instances[i].model);
-          shader.SetVector3($"_translate[{i}]", instances[i].translate);
+          shader.SetArrMatrix4(model3d.Value._matBase + i, instances[i].model);
+          shader.SetArrVector3(model3d.Value._transBase + i, instances[i].translate);
         }
         mesh.RenderInstanced(numInstances);
         shader.Unbind();
