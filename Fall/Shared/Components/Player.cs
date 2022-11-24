@@ -53,11 +53,11 @@ namespace Fall.Shared.Components
       float lyaw = objIn.Get<float_pos>().LerpedYaw + 180;
 
       _capeShader.Bind();
-      _capeShader.set_float("_yaw", lyaw);
-      _capeShader.set_vector3("_translation",
+      _capeShader.SetFloat("_yaw", lyaw);
+      _capeShader.SetVector3("_translation",
         renderPos + (1, 0, 1) + (-0.15f * MathF.Cos(lyaw.Rad()), 0,
           -0.15f * MathF.Sin(lyaw.Rad())));
-      _capeShader.set_vector4("_color", _color.to_vector4());
+      _capeShader.SetVector4("_color", _color.ToVector4());
       _cape.Render();
     }
   }

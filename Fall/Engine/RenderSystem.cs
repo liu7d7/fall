@@ -109,88 +109,88 @@ namespace Fall.Engine
       Model.Scale(scale);
     }
 
-    public static Vector4 to_vector4(this Color4 color)
+    public static Vector4 ToVector4(this Color4 color)
     {
       return (color.R, color.G, color.B, color.A);
     }
 
-    public static Vector4 to_vector4(this uint val)
+    public static Vector4 ToVector4(this uint val)
     {
       return (((val >> 16) & 0xff) / 255f, ((val >> 8) & 0xff) / 255f, (val & 0xff) / 255f,
         ((val >> 24) & 0xff) / 255f);
     }
 
-    public static uint to_uint(this Color4 color)
+    public static uint ToUInt(this Color4 color)
     {
       return (uint)color.ToArgb();
     }
 
-    public static void set_defaults(this shader shader)
+    public static void SetDefaults(this shader shader)
     {
-      shader.set_int("_renderingRed", RenderingRed ? 1 : 0);
-      shader.set_int("_rendering3d", Rendering3d ? 1 : 0);
-      shader.set_int("doLighting", 0);
-      shader.set_vector2("_screenSize", (Size.X, Size.Y));
-      shader.set_vector3("lightPos", (_camera.X + 5, _camera.Y + 12, _camera.Z + 5));
-      shader.set_matrix4("_proj", _projection);
-      shader.set_matrix4("_lookAt", _lookAt);
-      shader.set_float("_time", Environment.TickCount / 1000f % (MathF.PI * 2f));
+      shader.SetInt("_renderingRed", RenderingRed ? 1 : 0);
+      shader.SetInt("_rendering3d", Rendering3d ? 1 : 0);
+      shader.SetInt("doLighting", 0);
+      shader.SetVector2("_screenSize", (Size.X, Size.Y));
+      shader.SetVector3("lightPos", (_camera.X + 5, _camera.Y + 12, _camera.Z + 5));
+      shader.SetMatrix4("_proj", _projection);
+      shader.SetMatrix4("_lookAt", _lookAt);
+      shader.SetFloat("_time", Environment.TickCount / 1000f % (MathF.PI * 2f));
     }
 
-    public static void render_pixelation(float pixWidth, float pixHeight)
+    public static void RenderPixelation(float pixWidth, float pixHeight)
     {
-      FRAME.clear_color();
-      FRAME.clear_depth();
+      FRAME.ClearColor();
+      FRAME.ClearDepth();
       FRAME.Bind();
       _pixel.Bind();
-      SWAP.bind_color(TextureUnit.Texture0);
-      _pixel.set_int("_tex0", 0);
-      _pixel.set_vector2("_screenSize", (Size.X, Size.Y));
-      _pixel.set_vector2("_pixSize", (pixWidth, pixHeight));
+      SWAP.BindColor(TextureUnit.Texture0);
+      _pixel.SetInt("_tex0", 0);
+      _pixel.SetVector2("_screenSize", (Size.X, Size.Y));
+      _pixel.SetVector2("_pixSize", (pixWidth, pixHeight));
       _post.Render();
       shader.Unbind();
     }
 
-    public static void render_fxaa(fbo fbo)
+    public static void RenderFxaa(fbo fbo)
     {
       fbo.Blit(SWAP.Handle);
       SWAP.Bind();
       _fxaa.Bind();
-      fbo.bind_color(TextureUnit.Texture0);
-      _fxaa.set_int("_tex0", 0);
-      _fxaa.set_float("SpanMax", 8);
-      _fxaa.set_float("ReduceMul", 0.125f);
-      _fxaa.set_float("SubPixelShift", 0.25f);
-      _fxaa.set_vector2("_screenSize", (Size.X, Size.Y));
+      fbo.BindColor(TextureUnit.Texture0);
+      _fxaa.SetInt("_tex0", 0);
+      _fxaa.SetFloat("SpanMax", 8);
+      _fxaa.SetFloat("ReduceMul", 0.125f);
+      _fxaa.SetFloat("SubPixelShift", 0.25f);
+      _fxaa.SetVector2("_screenSize", (Size.X, Size.Y));
       _post.Render();
       shader.Unbind();
       SWAP.Blit(fbo.Handle);
     }
 
-    public static void render_outline()
+    public static void RenderOutline()
     {
-      FRAME.clear_color();
-      FRAME.clear_depth();
+      FRAME.ClearColor();
+      FRAME.ClearDepth();
       FRAME.Bind();
       _outline.Bind();
-      SWAP.bind_color(TextureUnit.Texture0);
-      _outline.set_int("_tex0", 0);
-      SWAP.bind_depth(TextureUnit.Texture1);
-      _outline.set_int("_tex1", 1);
-      _outline.set_int("_abs", 1);
-      _outline.set_int("_glow", 1);
-      _outline.set_int("_blackAndWhite", 1);
-      _outline.set_float("_width", 1f);
-      _outline.set_float("_threshold", THRESHOLD);
-      _outline.set_float("_depthThreshold", _depthThreshold);
-      _outline.set_vector2("_screenSize", (Size.X, Size.Y));
-      _outline.set_vector4("_outlineColor", fall.PINK.to_vector4());
-      _outline.set_vector4("_otherColor", Color4.White.to_vector4());
+      SWAP.BindColor(TextureUnit.Texture0);
+      _outline.SetInt("_tex0", 0);
+      SWAP.BindDepth(TextureUnit.Texture1);
+      _outline.SetInt("_tex1", 1);
+      _outline.SetInt("_abs", 1);
+      _outline.SetInt("_glow", 1);
+      _outline.SetInt("_blackAndWhite", 1);
+      _outline.SetFloat("_width", 1f);
+      _outline.SetFloat("_threshold", THRESHOLD);
+      _outline.SetFloat("_depthThreshold", _depthThreshold);
+      _outline.SetVector2("_screenSize", (Size.X, Size.Y));
+      _outline.SetVector4("_outlineColor", fall.PINK.ToVector4());
+      _outline.SetVector4("_otherColor", Color4.White.ToVector4());
       _post.Render();
       shader.Unbind();
     }
 
-    public static void update_projection()
+    public static void UpdateProjection()
     {
       if (Rendering3d)
       {
@@ -202,7 +202,7 @@ namespace Fall.Engine
       Matrix4.CreateOrthographic(Size.X, Size.Y, -1000, 3000, out _projection);
     }
 
-    public static void update_look_at(fall_obj cameraObj, bool rendering3d = true)
+    public static void UpdateLookAt(fall_obj cameraObj, bool rendering3d = true)
     {
       if (!cameraObj.Has<float_pos>()) return;
 

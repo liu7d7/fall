@@ -39,8 +39,18 @@ namespace Fall
     {
       void placeTrees()
       {
-        model3d model = model3d.Read("tree", new Dictionary<string, uint>());
-        model.Scale(4f);
+        model3d[] models = new model3d[5];
+        {
+          int i = 0;
+          foreach (string str in new[]
+                     { "large_tree", "large_tree_1", "large_tree_3", "large_tree_4", "large_tree_5" })
+          {
+            model3d model = model3d.Read(str, new Dictionary<string, uint>());
+            model.Scale(16f);
+            models[i] = model;
+            i++;
+          }
+        }
         for (int i = -100; i <= 100; i++)
         for (int j = -100; j <= 100; j++)
         {
@@ -48,14 +58,14 @@ namespace Fall
           {
             Updates = true
           };
-          model3d.component comp = new(model, rand.NextFloat() * 180);
+          model3d.component comp = new(models[rand.Next(0, 5)], rand.NextFloat() * 180);
           float_pos pos = new()
           {
             X = i * 50 + (rand.NextFloat() - 0.5f) * 50,
             Z = j * 50 + (rand.NextFloat() - 0.5f) * 50
           };
 
-          pos.Y = world.height_at((pos.X, pos.Z)) - 2f;
+          pos.Y = world.HeightAt((pos.X, pos.Z)) - 2f;
           pos.PrevX = pos.X;
           pos.PrevY = pos.Y;
           pos.PrevZ = pos.Z;
@@ -63,6 +73,49 @@ namespace Fall
           obj.Add(pos);
           obj.Add(new tree());
           World.Objs.Add(obj);
+        }
+      }
+
+      void placeBushes()
+      {
+        model3d[] models = new model3d[3];
+        {
+          int i = 0;
+          foreach (string str in new[]
+                     { "bush1", "bush2", "bush3" })
+          {
+            model3d model = model3d.Read(str, new Dictionary<string, uint>());
+            model.Scale(16f);
+            models[i] = model;
+            i++;
+          }
+        }
+        for (int i = -50; i <= 50; i++)
+        for (int j = -50; j <= 50; j++)
+        {
+          if (rand.Next(0, 3) != 0) continue;
+          float ipos = i * 100 + rand.NextFloat(-40, 40);
+          float jpos = j * 100 + rand.NextFloat(-40, 40);
+          
+          for (int k = 0; k < 3; k++)
+          for (int l = 0; l < 3; l++)
+          {
+            if (rand.Next(0, 3) != 0) continue;
+            fall_obj obj = new();
+            model3d.component comp = new(models[rand.Next(0, 3)], rand.NextFloat() * 180);
+            obj.Add(comp);
+            float_pos pos = new()
+            {
+              X = ipos + rand.NextFloat(-24, 24),
+              Z = jpos + rand.NextFloat(-24, 24)
+            };
+            pos.Y = world.HeightAt((pos.X, pos.Z)) - 2f;
+            pos.PrevX = pos.X;
+            pos.PrevY = pos.Y;
+            pos.PrevZ = pos.Z;
+            obj.Add(pos);
+            World.Objs.Add(obj);
+          }
         }
       }
 
@@ -87,6 +140,7 @@ namespace Fall
       World.Objs.Add(Player);
 
       placeTrees();
+      placeBushes();
 
       World.Update();
     }
@@ -97,7 +151,7 @@ namespace Fall
 
       GLFW.SwapInterval(0);
       GL.DepthFunc(DepthFunction.Lequal);
-      gl_state_manager.enable_blend();
+      gl_state_manager.EnableBlend();
 
       ticker.Init();
 
@@ -111,7 +165,7 @@ namespace Fall
       if (e.Size == Vector2i.Zero)
         return;
 
-      render_system.update_projection();
+      render_system.UpdateProjection();
       render_system.Resize();
       GL.Viewport(new Rectangle(0, 0, Size.X, Size.Y));
       fbo.Resize(Size.X, Size.Y);
@@ -126,13 +180,13 @@ namespace Fall
       fbo.Unbind();
       GL.ClearColor(c);
       GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-      render_system.FRAME.clear_color();
-      render_system.FRAME.clear_depth();
+      render_system.FRAME.ClearColor();
+      render_system.FRAME.ClearDepth();
       render_system.FRAME.Bind();
       GL.ClearColor(0f, 0f, 0f, 0f);
 
-      render_system.update_look_at(Player);
-      render_system.update_projection();
+      render_system.UpdateLookAt(Player);
+      render_system.UpdateProjection();
 
       render_system.RECT.Bind(TextureUnit.Texture0);
       render_system.MESH.Begin();
@@ -144,15 +198,15 @@ namespace Fall
 
       render_system.FRAME.Blit(render_system.SWAP.Handle);
       if (_outline)
-        render_system.render_outline();
-      render_system.render_fxaa(render_system.FRAME);
+        render_system.RenderOutline();
+      render_system.RenderFxaa(render_system.FRAME);
 
       fbo.Unbind();
 
       render_system.FRAME.Blit();
 
-      render_system.update_look_at(Player, false);
-      render_system.update_projection();
+      render_system.UpdateLookAt(Player, false);
+      render_system.UpdateProjection();
       font.Bind();
       render_system.RenderingRed = true;
       render_system.MESH.Begin();

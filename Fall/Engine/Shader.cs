@@ -18,19 +18,19 @@ namespace Fall.Engine
 
       GL.ShaderSource(vertexShader, shaderSource);
 
-      compile_shader(vertexShader);
+      CompileShader(vertexShader);
 
       shaderSource = File.ReadAllText(fragPath);
       int fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
       GL.ShaderSource(fragmentShader, shaderSource);
-      compile_shader(fragmentShader);
+      CompileShader(fragmentShader);
 
       _handle = GL.CreateProgram();
 
       GL.AttachShader(_handle, vertexShader);
       GL.AttachShader(_handle, fragmentShader);
 
-      link_program(_handle);
+      LinkProgram(_handle);
 
       GL.DetachShader(_handle, vertexShader);
       GL.DetachShader(_handle, fragmentShader);
@@ -49,7 +49,7 @@ namespace Fall.Engine
       }
     }
 
-    private static void compile_shader(int shader)
+    private static void CompileShader(int shader)
     {
       GL.CompileShader(shader);
 
@@ -59,7 +59,7 @@ namespace Fall.Engine
       throw new Exception($"Error occurred whilst compiling Shader({shader}).\n\n{infoLog}");
     }
 
-    private static void link_program(int program)
+    private static void LinkProgram(int program)
     {
       GL.LinkProgram(program);
 
@@ -82,7 +82,7 @@ namespace Fall.Engine
       _active = 0;
     }
 
-    public int get_attrib_location(string attribName)
+    public int GetAttribLocation(string attribName)
     {
       return GL.GetAttribLocation(_handle, attribName);
     }
@@ -92,7 +92,7 @@ namespace Fall.Engine
     /// </summary>
     /// <param name="name">The name of the uniform</param>
     /// <param name="data">The data to set</param>
-    public void set_int(string name, int data)
+    public void SetInt(string name, int data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
       Bind();
@@ -104,7 +104,7 @@ namespace Fall.Engine
     /// </summary>
     /// <param name="name">The name of the uniform</param>
     /// <param name="data">The data to set</param>
-    public void set_float(string name, float data)
+    public void SetFloat(string name, float data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
       Bind();
@@ -121,7 +121,7 @@ namespace Fall.Engine
     ///     The matrix is transposed before being sent to the shader.
     ///   </para>
     /// </remarks>
-    public void set_matrix4(string name, Matrix4 data)
+    public void SetMatrix4(string name, Matrix4 data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
       Bind();
@@ -133,7 +133,7 @@ namespace Fall.Engine
     /// </summary>
     /// <param name="name">The name of the uniform</param>
     /// <param name="data">The data to set</param>
-    public void set_vector3(string name, Vector3 data)
+    public void SetVector3(string name, Vector3 data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
       Bind();
@@ -145,7 +145,7 @@ namespace Fall.Engine
     /// </summary>
     /// <param name="name">The name of the uniform</param>
     /// <param name="data">The data to set</param>
-    public void set_vector2(string name, Vector2 data)
+    public void SetVector2(string name, Vector2 data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
       Bind();
@@ -157,7 +157,7 @@ namespace Fall.Engine
     /// </summary>
     /// <param name="name">The name of the uniform</param>
     /// <param name="data">The data to set</param>
-    public void set_vector4(string name, Vector4 data)
+    public void SetVector4(string name, Vector4 data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
       Bind();

@@ -15,7 +15,7 @@ namespace Fall.Shared.Tweens
       return _output;
     }
 
-    public override float output_at(float time)
+    public override float OutputAt(float time)
     {
       return _output;
     }

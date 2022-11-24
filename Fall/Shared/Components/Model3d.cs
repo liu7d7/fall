@@ -44,7 +44,7 @@ namespace Fall.Shared.Components
             break;
           }
           case "o":
-            mat = Shared.colors.NextColor().to_uint();
+            mat = Shared.colors.NextColor().ToUInt();
             break;
           case "f":
           {
@@ -67,7 +67,7 @@ namespace Fall.Shared.Components
       Vertices = vertices.ToArray();
       _texCoords = texCoords.ToArray();
       Faces = faces.ToArray();
-      for (int i = 0; i < Faces.Length; i++) calculate_normals(ref Faces[i]);
+      for (int i = 0; i < Faces.Length; i++) CalculateNormals(ref Faces[i]);
     }
 
     public void Scale(float scale)
@@ -90,25 +90,25 @@ namespace Fall.Shared.Components
       }
     }
 
-    public void flip_x()
+    public void FlipX()
     {
       for (int i = 0; i < Vertices.Length; i++) Vertices[i].X *= -1;
 
-      for (int i = 0; i < Faces.Length; i++) calculate_normals(ref Faces[i]);
+      for (int i = 0; i < Faces.Length; i++) CalculateNormals(ref Faces[i]);
     }
 
-    public void flip_y()
+    public void FlipY()
     {
       for (int i = 0; i < Vertices.Length; i++) Vertices[i].Y *= -1;
 
-      for (int i = 0; i < Faces.Length; i++) calculate_normals(ref Faces[i]);
+      for (int i = 0; i < Faces.Length; i++) CalculateNormals(ref Faces[i]);
     }
 
-    public void flip_z()
+    public void FlipZ()
     {
       for (int i = 0; i < Vertices.Length; i++) Vertices[i].Z *= -1;
 
-      for (int i = 0; i < Faces.Length; i++) calculate_normals(ref Faces[i]);
+      for (int i = 0; i < Faces.Length; i++) CalculateNormals(ref Faces[i]);
     }
 
     private float Fparse(string f)
@@ -116,7 +116,7 @@ namespace Fall.Shared.Components
       return float.Parse(f, CultureInfo.InvariantCulture);
     }
 
-    private void calculate_normals(ref face face)
+    private void CalculateNormals(ref face face)
     {
       Vector3 ab = Vertices[face[1].Pos] - Vertices[face[0].Pos];
       Vector3 ac = Vertices[face[2].Pos] - Vertices[face[0].Pos];
@@ -210,18 +210,18 @@ namespace Fall.Shared.Components
 
   public class face
   {
-    public readonly vertex_data[] Vertices;
+    private readonly vertex_data[] _vertices;
     public Vector3 Normal;
 
     public face()
     {
-      Vertices = new vertex_data[3];
+      _vertices = new vertex_data[3];
     }
 
     public vertex_data this[int idx]
     {
-      get => Vertices[idx];
-      set => Vertices[idx] = value;
+      get => _vertices[idx];
+      set => _vertices[idx] = value;
     }
   }
 }

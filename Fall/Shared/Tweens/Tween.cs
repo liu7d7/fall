@@ -24,7 +24,7 @@ namespace Fall.Shared.Tweens
           : _animation(Duration, Environment.TickCount - LastActivation), 0, 1);
     }
 
-    public override float output_at(float time)
+    public override float OutputAt(float time)
     {
       if (time < LastActivation) return 0;
 

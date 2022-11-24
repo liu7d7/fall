@@ -21,7 +21,7 @@ namespace Fall.Engine
       Ids = id;
     }
 
-    public static skybox_texture load_from_file(string path)
+    public static skybox_texture LoadFromFile(string path)
     {
       int idx = 0;
       int[] ids = new int[6];

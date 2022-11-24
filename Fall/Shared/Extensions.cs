@@ -15,21 +15,21 @@ namespace Fall.Shared
 
   public static class deterministic_random
   {
-    public static float[] Rand = new float[1000];
+    private static readonly float[] _rand = new float[1000];
 
     static deterministic_random()
     {
-      for (int i = 0; i < 1000; i++) Rand[i] = rand.NextFloat();
+      for (int i = 0; i < 1000; i++) _rand[i] = rand.NextFloat();
     }
 
-    public static float next_float(object val)
+    public static float NextFloat(object val)
     {
-      return Rand[Math.Abs(val.GetHashCode()) % 1000];
+      return _rand[Math.Abs(val.GetHashCode()) % 1000];
     }
 
-    public static int next_int(object val, int max)
+    public static int NextInt(object val, int max)
     {
-      return (int)(Rand[Math.Abs(val.GetHashCode()) % 1000] * max);
+      return (int)(_rand[Math.Abs(val.GetHashCode()) % 1000] * max);
     }
   }
 
@@ -59,7 +59,7 @@ namespace Fall.Shared
     {
       val ??= rand.NextInt64();
       if (!_initialized) GetColor("white");
-      return _colors[deterministic_random.next_int(val, _colors.Count)];
+      return _colors[deterministic_random.NextInt(val, _colors.Count)];
     }
 
     private static float _red, _blue, _green;

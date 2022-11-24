@@ -7,7 +7,7 @@ namespace Fall.Shared.Tweens
     public float LastActivation = Environment.TickCount;
 
     public abstract float Output();
-    public abstract float output_at(float time);
+    public abstract float OutputAt(float time);
     public abstract bool Done();
   }
 }

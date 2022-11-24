@@ -128,7 +128,7 @@ namespace Fall.Engine
       }
     }
 
-    public static float get_width(string text, float scale = 1.0f)
+    public static float GetWidth(string text, float scale = 1.0f)
     {
       int length = text.Length;
       float width = 0;
@@ -151,7 +151,7 @@ namespace Fall.Engine
       return width;
     }
 
-    public static float get_height(float scale = 1.0f)
+    public static float GetHeight(float scale = 1.0f)
     {
       return _ascent * scale;
     }

@@ -44,7 +44,7 @@ namespace Fall.Shared.Components
 
       _pos.set_prev();
 
-      on_mouse_move();
+      OnMouseMove();
 
       int forwards = 0;
       int rightwards = 0;
@@ -58,7 +58,7 @@ namespace Fall.Shared.Components
       _velocity += _right * rightwards;
       _velocity.Y -= 0.2f;
       current += _velocity;
-      float height = world.height_at((_pos.X, _pos.Z));
+      float height = world.HeightAt((_pos.X, _pos.Z));
       if (current.Y < height)
       {
         current.Y = height;
@@ -69,7 +69,7 @@ namespace Fall.Shared.Components
       _pos.set_vector3(current);
     }
 
-    public void on_mouse_move()
+    private void OnMouseMove()
     {
       if (fall.Instance.CursorState != CursorState.Grabbed || !fall.Instance.IsFocused) return;
       float xPos = fall.MouseX;
@@ -105,8 +105,9 @@ namespace Fall.Shared.Components
       if (_pos == null) return Matrix4.Identity;
 
       Vector3 pos = new(_pos.LerpedX, _pos.LerpedY, _pos.LerpedZ);
+      pos.Y += 4;
       Vector3 eye = pos - _front * 25;
-      eye.Y = Math.Max(eye.Y, world.height_at((eye.X, eye.Z)) + 0.33f);
+      eye.Y = Math.Max(eye.Y, world.HeightAt((eye.X, eye.Z)) + 0.33f);
       Matrix4 lookAt = Matrix4.LookAt(eye, pos, _up);
       return lookAt;
     }

@@ -174,14 +174,14 @@ namespace Fall.Engine
       if (_building) End();
 
       if (_index <= 0) return;
-      gl_state_manager.save_state();
-      gl_state_manager.enable_blend();
+      gl_state_manager.SaveState();
+      gl_state_manager.EnableBlend();
       if (render_system.Rendering3d)
-        gl_state_manager.enable_depth();
+        gl_state_manager.EnableDepth();
       else
-        gl_state_manager.disable_depth();
+        gl_state_manager.DisableDepth();
       _shader?.Bind();
-      _shader?.set_defaults();
+      _shader?.SetDefaults();
       _vao.Bind();
       _ibo.Bind();
       _vbo.Bind();
@@ -189,7 +189,7 @@ namespace Fall.Engine
       ibo.Unbind();
       vbo.Unbind();
       vao.Unbind();
-      gl_state_manager.restore_state();
+      gl_state_manager.RestoreState();
     }
 
     public sealed class draw_mode

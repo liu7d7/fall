@@ -134,12 +134,12 @@ namespace Fall.Engine
       foreach (KeyValuePair<int, fbo> frame in _frames) frame.Value._resize(width, height);
     }
 
-    public void bind_color(TextureUnit unit)
+    public void BindColor(TextureUnit unit)
     {
       texture.Bind(_colorAttachment, unit);
     }
 
-    public int bind_depth(TextureUnit unit)
+    public int BindDepth(TextureUnit unit)
     {
       if (!_useDepth) throw new Exception("Trying to bind depth texture of a framebuffer without depth!");
 
@@ -147,14 +147,14 @@ namespace Fall.Engine
       return _depthAttachment;
     }
 
-    public void clear_color()
+    public void ClearColor()
     {
       Bind();
       GL.Clear(ClearBufferMask.ColorBufferBit);
       Unbind();
     }
 
-    public void clear_depth()
+    public void ClearDepth()
     {
       Bind();
       GL.Clear(ClearBufferMask.DepthBufferBit);

@@ -56,7 +56,7 @@ namespace Fall.Shared.Components
       }
     }
 
-    public static float height_at(Vector2 vec)
+    public static float HeightAt(Vector2 vec)
     {
       return chunk.height_at(vec);
     }

@@ -24,7 +24,7 @@ namespace Fall.Shared.Tweens
       return _lastOut = _list[_idx].Output();
     }
 
-    public override float output_at(float time)
+    public override float OutputAt(float time)
     {
       float duration = 0f;
       float lastDuration = 0f;
@@ -37,7 +37,7 @@ namespace Fall.Shared.Tweens
       }
 
       i--;
-      return _list[i].output_at(time - lastDuration - LastActivation);
+      return _list[i].OutputAt(time - lastDuration - LastActivation);
     }
 
     public override bool Done()

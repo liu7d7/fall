@@ -26,7 +26,7 @@ namespace Fall.Shared.Tweens
       return MathHelper.Lerp(From, To, Animation(Duration, Environment.TickCount - LastActivation));
     }
 
-    public override float output_at(float time)
+    public override float OutputAt(float time)
     {
       if (time < LastActivation) return From;
 
