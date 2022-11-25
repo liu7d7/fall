@@ -7,9 +7,8 @@ namespace Fall.Engine
   public class shader
   {
     private static int _active;
-    private readonly int _handle;
+    public readonly int Handle;
     private readonly Dictionary<string, int> _uniformLocations;
-    private readonly List<int> _uniformArrayLocations;
 
     public shader(string vertPath, string fragPath)
     {
@@ -26,41 +25,28 @@ namespace Fall.Engine
       GL.ShaderSource(fragmentShader, shaderSource);
       CompileShader(fragmentShader);
 
-      _handle = GL.CreateProgram();
+      Handle = GL.CreateProgram();
 
-      GL.AttachShader(_handle, vertexShader);
-      GL.AttachShader(_handle, fragmentShader);
+      GL.AttachShader(Handle, vertexShader);
+      GL.AttachShader(Handle, fragmentShader);
 
-      LinkProgram(_handle);
+      LinkProgram(Handle);
 
-      GL.DetachShader(_handle, vertexShader);
-      GL.DetachShader(_handle, fragmentShader);
+      GL.DetachShader(Handle, vertexShader);
+      GL.DetachShader(Handle, fragmentShader);
       GL.DeleteShader(fragmentShader);
       GL.DeleteShader(vertexShader);
 
-      GL.GetProgram(_handle, GetProgramParameterName.ActiveUniforms, out int numberOfUniforms);
+      GL.GetProgram(Handle, GetProgramParameterName.ActiveUniforms, out int numberOfUniforms);
 
       _uniformLocations = new Dictionary<string, int>();
-      _uniformArrayLocations = new List<int>();
 
       for (int i = 0; i < numberOfUniforms; i++)
       {
-        string key = GL.GetActiveUniform(_handle, i, out _, out _);
-        int location = GL.GetUniformLocation(_handle, key);
+        string key = GL.GetActiveUniform(Handle, i, out _, out _);
+        int location = GL.GetUniformLocation(Handle, key);
         _uniformLocations.Add(key, location);
       }
-    }
-
-    public int ArrayUniform(string name, int size)
-    {
-      int b = _uniformArrayLocations.Count;
-      for (int i = 0; i < size; i++)
-      {
-        int key = GL.GetUniformLocation(_handle, $"{name}[{i}]");
-        _uniformArrayLocations.Add(key);
-      }
-
-      return b;
     }
 
     private static void CompileShader(int shader)
@@ -85,9 +71,9 @@ namespace Fall.Engine
 
     public void Bind()
     {
-      if (_handle == _active) return;
-      GL.UseProgram(_handle);
-      _active = _handle;
+      if (Handle == _active) return;
+      GL.UseProgram(Handle);
+      _active = Handle;
     }
 
     public static void Unbind()
@@ -98,7 +84,7 @@ namespace Fall.Engine
 
     public int GetAttribLocation(string attribName)
     {
-      return GL.GetAttribLocation(_handle, attribName);
+      return GL.GetAttribLocation(Handle, attribName);
     }
     
     public void SetInt(string name, int data)
@@ -143,16 +129,16 @@ namespace Fall.Engine
       GL.Uniform4(_uniformLocations[name], data);
     }
     
-    public void SetArrMatrix4(int index, Matrix4 data)
+    public void SetArrMatrix4(string loc, ref Matrix4[] data)
     {
       Bind();
-      GL.UniformMatrix4(_uniformArrayLocations[index], true, ref data);
+      GL.UniformMatrix4(_uniformLocations[loc + "[0]"], data.Length, true, ref data[0].Row0.X);
     }
     
-    public void SetArrVector3(int index, Vector3 data)
+    public void SetArrVector3(string loc, ref Vector3[] data)
     {
       Bind();
-      GL.Uniform3(_uniformArrayLocations[index], data);
+      GL.Uniform3(_uniformLocations[loc + "[0]"], data.Length, ref data[0].X);
     }
   }
 }

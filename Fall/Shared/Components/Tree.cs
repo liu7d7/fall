@@ -2,7 +2,6 @@
 {
   public class tree : fall_obj.component
   {
-    private readonly int _offset = rand.Next(0, 10);
 
     public override void Update(fall_obj objIn)
     {

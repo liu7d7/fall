@@ -90,7 +90,54 @@ namespace Fall
           obj.Add(comp);
           obj.Add(pos);
           obj.Add(new tree());
+          obj.Add(new tag(i == 0 && j == 0 ? 0 : rand.Next()));
           World.Objs.Add(obj);
+
+          if (i == 0 && j == 0)
+          {
+            Console.WriteLine(obj.Pos);
+          }
+        }
+      }
+
+      void placeTrees2()
+      {
+        model3d[] models = new model3d[5];
+        {
+          int i = 0;
+          foreach (string str in new[]
+                     { "large_tree", "large_tree_1", "large_tree_3", "large_tree_4", "large_tree_5" })
+          {
+            model3d model = model3d.Read(str, new Dictionary<string, uint>());
+            model.Scale(16f);
+            models[i] = model;
+            i++;
+          }
+        }
+        for (int i = 0; i < 5; i++)
+        {
+          for (int j = 0; j < i + 7; j++)
+          {
+            fall_obj obj = new()
+            {
+              Updates = true
+            };
+            model3d.component comp = new(models[i], rand.NextFloat() * 180);
+            float_pos pos = new()
+            {
+              X = (rand.NextFloat() - 0.5f) * 50,
+              Z = (rand.NextFloat() - 0.5f) * 50
+            };
+
+            pos.Y = world.HeightAt((pos.X, pos.Z)) - 2f;
+            pos.PrevX = pos.X;
+            pos.PrevY = pos.Y;
+            pos.PrevZ = pos.Z;
+            obj.Add(comp);
+            obj.Add(pos);
+            obj.Add(new tree());
+            World.Objs.Add(obj);
+          }
         }
       }
 
@@ -157,8 +204,8 @@ namespace Fall
       World = new world();
       World.Objs.Add(Player);
 
-      placeTrees();
-      placeBushes();
+      placeTrees2();
+      // placeBushes();
 
       World.Update();
     }

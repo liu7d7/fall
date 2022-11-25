@@ -23,9 +23,9 @@ namespace Fall.Shared.Components
       base.Render(objIn);
       
       render_system.Push();
-      render_system.Translate(-objIn.Pos);
+      render_system.Translate(objIn.LerpedPos);
       render_system.Scale(MathHelper.Clamp(1 - (Environment.TickCount - _landing) / 1000f, 0, 1));
-      render_system.Translate(objIn.Pos);
+      render_system.Translate(-objIn.LerpedPos);
       _snow.Render(objIn.LerpedPos);
       render_system.Pop();
     }
