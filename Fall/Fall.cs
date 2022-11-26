@@ -18,14 +18,15 @@ namespace Fall
     public static fall_obj Player;
     public static world World;
     public static float MouseDx, MouseDy, MouseX, MouseY;
-    public static int Ticks;
+    public static uint Ticks;
+    public static uint Frames; 
     public static int InView;
     public static bool FarCamera;
-    
+
     private static readonly DebugProc _debugProcCallback = DebugCallback;
     private static GCHandle _debugProcCallbackHandle;
     private readonly Color4 _c = colors.NextColor();
-    private readonly rolling_avg _mspf = new(300);
+    private readonly rolling_avg _mspf = new(180);
     private int _lastInquiry;
     private int _memUsage;
     private bool _outline;
@@ -37,13 +38,13 @@ namespace Fall
       GL.Enable(EnableCap.Multisample);
       render_system.Resize();
       CreateWorld();
-      
+
       _debugProcCallbackHandle = GCHandle.Alloc(_debugProcCallback);
       GL.DebugMessageCallback(_debugProcCallback, IntPtr.Zero);
       GL.Enable(EnableCap.DebugOutput);
       GL.Enable(EnableCap.DebugOutputSynchronous);
     }
-    
+
     private static void DebugCallback(DebugSource source, DebugType type, int id,
       DebugSeverity severity, int length, IntPtr message, IntPtr userParam)
     {
@@ -93,11 +94,6 @@ namespace Fall
           obj.Add(new tree());
           obj.Add(new tag(i == 0 && j == 0 ? 0 : rand.Next()));
           World.Objs.Add(obj);
-
-          if (i == 0 && j == 0)
-          {
-            Console.WriteLine(obj.Pos);
-          }
         }
       }
 
@@ -121,7 +117,7 @@ namespace Fall
           if (rand.Next(0, 3) != 0) continue;
           float ipos = i * 100 + rand.NextFloat(-40, 40);
           float jpos = j * 100 + rand.NextFloat(-40, 40);
-          
+
           for (int k = 0; k < 3; k++)
           for (int l = 0; l < 3; l++)
           {
@@ -201,7 +197,7 @@ namespace Fall
       base.OnRenderFrame(args);
 
       Player.Get<camera>(fall_obj.component.type.CAMERA).update_camera_vectors();
-      
+
       fbo.Unbind();
       GL.ClearColor(_c);
       GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
@@ -232,27 +228,48 @@ namespace Fall
       font.Bind();
       render_system.RenderingRed = true;
       render_system.MESH.Begin();
-      _mspf.Add(args.Time);
+      if (Frames % 2 == 0)
+      {
+        _mspf.Add(args.Time);
+      }
+      
       if (Environment.TickCount - _lastInquiry > 1000)
       {
         _lastInquiry = Environment.TickCount;
         _memUsage = (int)(GC.GetTotalMemory(false) / (1024 * 1024));
       }
-
       font.Draw(render_system.MESH, $"mspf: {_mspf.Average:N4} | fps: {1f / _mspf.Average:N2}"
-        , -Size.X / 2f + 11, Size.Y / 2f - 8, PINK, false);
+        , 11, 38, PINK, false);
       font.Draw(render_system.MESH, $"_time: {Environment.TickCount / 1000f % (MathF.PI * 2f):N2}",
-        -Size.X / 2f + 11, Size.Y / 2f - 28, PINK, false);
+        11, 58, PINK, false);
       font.Draw(render_system.MESH, $"xyz: {Player.Pos.X:N2}; {Player.Pos.Y:N2}; {Player.Pos.Z:N2}",
-        -Size.X / 2f + 11, Size.Y / 2f - 48,
+        11, 78,
         PINK, false);
-      font.Draw(render_system.MESH, $"heap: {_memUsage}M", -Size.X / 2f + 11, Size.Y / 2f - 68,
+      font.Draw(render_system.MESH, $"heap: {_memUsage}M", 11, 98,
         PINK, false);
       render_system.MESH.Render();
       render_system.RenderingRed = false;
+
+      render_system.LINE.Begin();
+      {
+        double p = 0;
+        int x = 0;
+        foreach (double f in _mspf.Values)
+        {
+          if (x != 0)
+          {
+            render_system.Line(11 + x * 2 - 2, Size.Y - 41 - 30 * ((float)p - 0.005f) * 100, 11 + x * 2,
+              Size.Y - 41 - 30 * ((float)f - 0.005f) * 100 + 1, PINK);
+          }
+          p = f;
+          x++;
+        }
+      }
+      render_system.LINE.Render();
       font.Unbind();
 
       SwapBuffers();
+      Frames++;
     }
 
     protected override void OnMouseMove(MouseMoveEventArgs e)
@@ -279,6 +296,8 @@ namespace Fall
 
       if (KeyboardState.IsKeyPressed(Keys.O)) _outline = !_outline;
       if (KeyboardState.IsKeyPressed(Keys.C)) FarCamera = !FarCamera;
+      if (KeyboardState.IsKeyPressed(Keys.F11)) WindowState = WindowState == WindowState.Fullscreen ? WindowState.Normal : WindowState.Fullscreen;
+      
 
       for (int j = 0; j < Math.Min(i, 10); j++)
       {

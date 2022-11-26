@@ -8,7 +8,6 @@ namespace Fall.Shared.Components
   {
     public const float FOV = 45 * MathF.PI / 180f;
     public const float NEAR = 0.1f;
-    public static float Far => fall.FarCamera ? 1024f : 128f;
     private readonly Vector3 _up;
     private Vector3 _front;
     private float _lastX;
@@ -27,6 +26,8 @@ namespace Fall.Shared.Components
       _up = Vector3.UnitY;
       _lastX = 0;
     }
+
+    public static float Far => fall.FarCamera ? 1024f : 128f;
 
     public void update_camera_vectors()
     {

@@ -7,17 +7,14 @@ namespace Fall.Engine
   public class shader
   {
     private static int _active;
-    public readonly int Handle;
     private readonly Dictionary<string, int> _uniformLocations;
+    public readonly int Handle;
 
-    public shader(string vertPath, string fragPath)
+    public shader(string vertPath, string fragPath, string geomPath = null)
     {
       string shaderSource = File.ReadAllText(vertPath);
-
       int vertexShader = GL.CreateShader(ShaderType.VertexShader);
-
       GL.ShaderSource(vertexShader, shaderSource);
-
       CompileShader(vertexShader);
 
       shaderSource = File.ReadAllText(fragPath);
@@ -25,17 +22,35 @@ namespace Fall.Engine
       GL.ShaderSource(fragmentShader, shaderSource);
       CompileShader(fragmentShader);
 
+      int geometryShader = -1;
+      if (geomPath != null)
+      {
+        shaderSource = File.ReadAllText(geomPath);
+        geometryShader = GL.CreateShader(ShaderType.GeometryShader);
+        GL.ShaderSource(geometryShader, shaderSource);
+        CompileShader(geometryShader);
+      }
+      
       Handle = GL.CreateProgram();
 
       GL.AttachShader(Handle, vertexShader);
       GL.AttachShader(Handle, fragmentShader);
+      if (geomPath != null)
+      {
+        GL.AttachShader(Handle, geometryShader);
+      }
 
       LinkProgram(Handle);
 
       GL.DetachShader(Handle, vertexShader);
+      GL.DeleteShader(vertexShader);
       GL.DetachShader(Handle, fragmentShader);
       GL.DeleteShader(fragmentShader);
-      GL.DeleteShader(vertexShader);
+      if (geomPath != null)
+      {
+        GL.DetachShader(Handle, geometryShader);
+        GL.DeleteShader(geometryShader);
+      }
 
       GL.GetProgram(Handle, GetProgramParameterName.ActiveUniforms, out int numberOfUniforms);
 
@@ -86,21 +101,21 @@ namespace Fall.Engine
     {
       return GL.GetAttribLocation(Handle, attribName);
     }
-    
+
     public void SetInt(string name, int data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
       Bind();
       GL.Uniform1(_uniformLocations[name], data);
     }
-    
+
     public void SetFloat(string name, float data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
       Bind();
       GL.Uniform1(_uniformLocations[name], data);
     }
-    
+
     public void SetMatrix4(string name, Matrix4 data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
@@ -114,7 +129,7 @@ namespace Fall.Engine
       Bind();
       GL.Uniform3(_uniformLocations[name], data);
     }
-    
+
     public void SetVector2(string name, Vector2 data)
     {
       if (!_uniformLocations.ContainsKey(name)) return;
@@ -128,13 +143,13 @@ namespace Fall.Engine
       Bind();
       GL.Uniform4(_uniformLocations[name], data);
     }
-    
+
     public void SetArrMatrix4(string loc, ref Matrix4[] data)
     {
       Bind();
       GL.UniformMatrix4(_uniformLocations[loc + "[0]"], data.Length, true, ref data[0].Row0.X);
     }
-    
+
     public void SetArrVector3(string loc, ref Vector3[] data)
     {
       Bind();

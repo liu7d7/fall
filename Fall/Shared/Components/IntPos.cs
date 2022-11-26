@@ -1,5 +1,3 @@
-using OpenTK.Mathematics;
-
 namespace Fall.Shared.Components
 {
   public class int_pos : fall_obj.component
@@ -10,7 +8,6 @@ namespace Fall.Shared.Components
 
     public int_pos() : base(type.INT_POS)
     {
-      
     }
   }
 }

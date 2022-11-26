@@ -8,8 +8,8 @@ namespace Fall.Engine
     private readonly byte[] _bitDest = new byte[4];
     private readonly int _handle;
     private readonly bool _static;
-    private byte[] _indices;
     private int _count;
+    private byte[] _indices;
 
     public ibo(int initialCapacity, bool @static)
     {
@@ -34,10 +34,7 @@ namespace Fall.Engine
     public void Put(int element)
     {
       BitConverter.TryWriteBytes(_bitDest, element);
-      if (_count + 4 > _indices.Length)
-      {
-        Array.Resize(ref _indices, _indices.Length * 2);
-      }
+      if (_count + 4 > _indices.Length) Array.Resize(ref _indices, _indices.Length * 2);
       _indices[_count] = _bitDest[0];
       _indices[_count + 1] = _bitDest[1];
       _indices[_count + 2] = _bitDest[2];
@@ -48,7 +45,8 @@ namespace Fall.Engine
     public void Upload(bool unbindAfter = true)
     {
       if (_active != _handle) Bind();
-      GL.BufferData(BufferTarget.ElementArrayBuffer, _count, _indices, _static ? BufferUsageHint.StaticDraw : BufferUsageHint.DynamicDraw);
+      GL.BufferData(BufferTarget.ElementArrayBuffer, _count, _indices,
+        _static ? BufferUsageHint.StaticDraw : BufferUsageHint.DynamicDraw);
       if (unbindAfter) Unbind();
     }
 

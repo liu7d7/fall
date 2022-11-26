@@ -191,7 +191,7 @@ namespace Fall.Engine
       vao.Unbind();
       gl_state_manager.RestoreState();
     }
-    
+
     public void RenderInstanced(int numInstances)
     {
       if (_building) End();
@@ -247,7 +247,7 @@ namespace Fall.Engine
       {
         return _mode;
       }
-      
+
       public PrimitiveType AsGlPrim()
       {
         return _prim;

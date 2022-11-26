@@ -40,6 +40,8 @@ namespace Fall.Shared
     private static readonly Dictionary<string, Color4> _values = new();
     private static readonly List<Color4> _colors = new();
 
+    private static float _red, _blue, _green;
+
     public static Color4 GetColor(string color)
     {
       if (_initialized) return _values[color.ToLower()];
@@ -63,7 +65,6 @@ namespace Fall.Shared
       return _colors[deterministic_random.NextInt(val, _colors.Count)];
     }
 
-    private static float _red, _blue, _green;
     public static Color4 NextColor()
     {
       _red += render_system.THRESHOLD + 0.00001f;
@@ -78,12 +79,35 @@ namespace Fall.Shared
 
   public static class rand
   {
-    public static float NextFloat() => Random.Shared.NextSingle();
-    public static float NextFloat(float min, float max) => Random.Shared.NextSingle() * (max - min) + min;
-    public static int Next(int min, int max) => Random.Shared.Next(min, max);
-    public static int Next(int max) => Random.Shared.Next(max);
-    public static int Next() => Random.Shared.Next();
-    public static long NextInt64() => Random.Shared.NextInt64();
+    public static float NextFloat()
+    {
+      return Random.Shared.NextSingle();
+    }
+
+    public static float NextFloat(float min, float max)
+    {
+      return Random.Shared.NextSingle() * (max - min) + min;
+    }
+
+    public static int Next(int min, int max)
+    {
+      return Random.Shared.Next(min, max);
+    }
+
+    public static int Next(int max)
+    {
+      return Random.Shared.Next(max);
+    }
+
+    public static int Next()
+    {
+      return Random.Shared.Next();
+    }
+
+    public static long NextInt64()
+    {
+      return Random.Shared.NextInt64();
+    }
   }
 
   public static class extensions
@@ -97,7 +121,7 @@ namespace Fall.Shared
       o += "]";
       return o;
     }
-    
+
     public static string ContentToString<T>(this IEnumerable<T> arr)
     {
       string o = "[";
@@ -189,21 +213,6 @@ namespace Fall.Shared
     {
       matrix4 *= Matrix4.CreateFromAxisAngle(new Vector3(x, y, z), angle / 180f * MathF.PI);
     }
-    
-    static class array_accessor<T>
-    {
-      public static Func<List<T>, T[]> Getter;
-
-      static array_accessor()
-      {
-        DynamicMethod dm = new DynamicMethod("get", MethodAttributes.Static | MethodAttributes.Public, CallingConventions.Standard, typeof(T[]), new[] { typeof(List<T>) }, typeof(array_accessor<T>), true);
-        ILGenerator il = dm.GetILGenerator();
-        il.Emit(OpCodes.Ldarg_0); // Load List<T> argument
-        il.Emit(OpCodes.Ldfld, typeof(List<T>).GetField("_items", BindingFlags.NonPublic | BindingFlags.Instance)); // Replace argument by field
-        il.Emit(OpCodes.Ret); // Return field
-        Getter = (Func<List<T>, T[]>)dm.CreateDelegate(typeof(Func<List<T>, T[]>));
-      }
-    }
 
     public static T[] GetInternalArray<T>(this List<T> list)
     {
@@ -233,6 +242,24 @@ namespace Fall.Shared
     public static Vector2i ToChunkPos(this Vector2 vec)
     {
       return ((int)vec.X >> 4, (int)vec.Y >> 4);
+    }
+
+    private static class array_accessor<T>
+    {
+      public static readonly Func<List<T>, T[]> Getter;
+
+      static array_accessor()
+      {
+        DynamicMethod dm = new("get", MethodAttributes.Static | MethodAttributes.Public, CallingConventions.Standard,
+          typeof(T[]), new[] { typeof(List<T>) }, typeof(array_accessor<T>), true);
+        ILGenerator il = dm.GetILGenerator();
+        il.Emit(OpCodes.Ldarg_0); // Load List<T> argument
+        il.Emit(OpCodes.Ldfld,
+          typeof(List<T>).GetField("_items",
+            BindingFlags.NonPublic | BindingFlags.Instance)); // Replace argument by field
+        il.Emit(OpCodes.Ret); // Return field
+        Getter = (Func<List<T>, T[]>)dm.CreateDelegate(typeof(Func<List<T>, T[]>));
+      }
     }
   }
 }

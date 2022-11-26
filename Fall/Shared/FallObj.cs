@@ -1,4 +1,3 @@
-using System.Reflection;
 using Fall.Shared.Components;
 using OpenTK.Mathematics;
 
@@ -7,8 +6,8 @@ namespace Fall.Shared
   public class fall_obj
   {
     private readonly component[] _cache = new component[(int)component.type.SIZE];
-    public bool Updates;
     public bool Removed;
+    public bool Updates;
 
     public Vector3 Pos => Get<float_pos>(component.type.FLOAT_POS).to_vector3();
     public Vector3 LerpedPos => Get<float_pos>(component.type.FLOAT_POS).to_lerped_vector3();
@@ -45,6 +44,21 @@ namespace Fall.Shared
 
     public class component
     {
+      public enum type
+      {
+        NOT_A_TYPE,
+        CAMERA,
+        COLLISION,
+        FLOAT_POS,
+        INT_POS,
+        MODEL_3D,
+        PLAYER,
+        SNOW,
+        TAG,
+        TREE,
+        SIZE
+      }
+
       public readonly type Type;
 
       protected component(type type)
@@ -52,11 +66,6 @@ namespace Fall.Shared
         Type = type;
       }
 
-      public enum type
-      {
-        NOT_A_TYPE, CAMERA, COLLISION, FLOAT_POS, INT_POS, MODEL_3D, PLAYER, SNOW, TAG, TREE, SIZE
-      }
-      
       public virtual void Update(fall_obj objIn)
       {
       }

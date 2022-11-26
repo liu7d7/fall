@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text;
 using Fall.Engine;
 using OpenTK.Mathematics;
 
@@ -10,13 +9,13 @@ namespace Fall.Shared.Components
     private static readonly Dictionary<string, model3d> _components = new();
     private static readonly shader _shader;
     private static readonly ubo _ubo;
-    
-    private readonly Vector2[] _texCoords;
     private readonly face[] _faces;
-    private readonly Vector3[] _vertices;
     private readonly mesh _mesh;
     private readonly List<Matrix4> _models = new();
-    
+
+    private readonly Vector2[] _texCoords;
+    private readonly Vector3[] _vertices;
+
     static model3d()
     {
       _shader = new shader("Resource/Shader/instanced.vert", "Resource/Shader/john.frag");
@@ -61,7 +60,7 @@ namespace Fall.Shared.Components
             string[] vt1 = parts[1].Split("/");
             string[] vt2 = parts[2].Split("/");
             string[] vt3 = parts[3].Split("/");
-            face face = new face
+            face face = new()
             {
               [0] = new(int.Parse(vt1[0]) - 1, int.Parse(vt1[1]) - 1),
               [1] = new(int.Parse(vt2[0]) - 1, int.Parse(vt2[1]) - 1),
@@ -80,7 +79,7 @@ namespace Fall.Shared.Components
       _texCoords = texCoords.ToArray();
       _faces = faces.ToArray();
       for (int i = 0; i < _faces.Length; i++) CalculateNormals(ref _faces[i]);
-      
+
       _mesh = new mesh(
         mesh.draw_mode.TRIANGLE,
         _shader,
@@ -101,6 +100,7 @@ namespace Fall.Shared.Components
         _vertices[i].Y *= scale;
         _vertices[i].Z *= scale;
       }
+
       ToMesh((0, 0, 0));
     }
 
@@ -112,6 +112,7 @@ namespace Fall.Shared.Components
         _vertices[i].X *= x;
         _vertices[i].Z *= z;
       }
+
       ToMesh((0, 0, 0));
     }
 
@@ -164,14 +165,18 @@ namespace Fall.Shared.Components
         Vector2 uv1 = _texCoords[face[0].Uv];
         Vector2 uv2 = _texCoords[face[1].Uv];
         Vector2 uv3 = _texCoords[face[2].Uv];
-        int i1 = _mesh.Float3(vt1.X + pos.X, vt1.Y + pos.Y, vt1.Z + pos.Z).Float3(face.Normal).Float2(uv1).Float4(face[0].Color).Next();
-        int i2 = _mesh.Float3(vt2.X + pos.X, vt2.Y + pos.Y, vt2.Z + pos.Z).Float3(face.Normal).Float2(uv2).Float4(face[1].Color).Next();
-        int i3 = _mesh.Float3(vt3.X + pos.X, vt3.Y + pos.Y, vt3.Z + pos.Z).Float3(face.Normal).Float2(uv3).Float4(face[2].Color).Next();
+        int i1 = _mesh.Float3(vt1.X + pos.X, vt1.Y + pos.Y, vt1.Z + pos.Z).Float3(face.Normal).Float2(uv1)
+          .Float4(face[0].Color).Next();
+        int i2 = _mesh.Float3(vt2.X + pos.X, vt2.Y + pos.Y, vt2.Z + pos.Z).Float3(face.Normal).Float2(uv2)
+          .Float4(face[1].Color).Next();
+        int i3 = _mesh.Float3(vt3.X + pos.X, vt3.Y + pos.Y, vt3.Z + pos.Z).Float3(face.Normal).Float2(uv3)
+          .Float4(face[2].Color).Next();
         _mesh.Tri(i1, i2, i3);
       }
+
       _mesh.End();
     }
-    
+
     public void Render(Vector3 pos)
     {
       _models.Add(Matrix4.CreateTranslation(pos) * render_system.Model);
@@ -184,17 +189,17 @@ namespace Fall.Shared.Components
         model3d model = pair.Value;
         if (model._models.Count == 0) continue;
         mesh mesh = model._mesh;
-        
+
         Matrix4[] models = model._models.GetInternalArray();
-        
+
         int count = Math.Min(1024, model._models.Count);
-        
+
         _shader.Bind();
         _ubo.PutAll(ref models, count, 0);
-        
+
         _ubo.BindTo(0);
         mesh.RenderInstanced(count);
-        
+
         shader.Unbind();
         _ubo.Clear();
         model._models.Clear();

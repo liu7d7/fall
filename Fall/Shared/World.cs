@@ -47,15 +47,21 @@ namespace Fall.Shared
     public void Render()
     {
       Vector2i chunkPos = fall.Player.Pos.Xz.ToChunkPos();
+      float lyaw = fall.Player.Get<float_pos>(fall_obj.component.type.FLOAT_POS).LerpedYaw;
       for (int i = -8; i <= 8; i++)
       for (int j = -8; j <= 8; j++)
+      {
+        int len = i * i + j * j;
+        if (i * i + j * j > 81) continue;
+        if (MathF.Abs(math.WrapDegrees(math.CalcAngle(j, i) - lyaw)) > 75 && len > 9) continue;
         _chunks[(i + chunkPos.X, j + chunkPos.Y)].Mesh.Render();
+      }
+      
       for (int i = 0; i < Objs.Count; i++)
       {
         float d = (Objs[i].Pos - fall.Player.Pos).Xz.LengthSquared;
         if (d > 72 * 256) continue;
-        if (MathF.Abs(math.WrapDegrees(math.CalcAngleXz(fall.Player, Objs[i]) -
-                       fall.Player.Get<float_pos>(fall_obj.component.type.FLOAT_POS).LerpedYaw)) > 60 && d > 864) continue;
+        if (MathF.Abs(math.WrapDegrees(math.CalcAngleXz(fall.Player, Objs[i]) - lyaw)) > 60 && d > 864) continue;
         Objs[i].Render();
       }
     }

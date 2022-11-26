@@ -1,4 +1,4 @@
-using OpenTK.Mathematics;
+using Fall.Engine;
 
 namespace Fall.Shared
 {
@@ -26,7 +26,7 @@ namespace Fall.Shared
       float t0 = MathF.Max(t3, t1);
       t1 = MathF.Min(t3, t1);
       t3 = 1.0f / t0 * t1;
-      
+
       float t4 = t3 * t3;
       t0 = -0.013480470f;
       t0 = MathF.FusedMultiplyAdd(t0, t4, 0.057477314f);
@@ -36,20 +36,11 @@ namespace Fall.Shared
       t0 = MathF.FusedMultiplyAdd(t0, t4, 0.999995630f);
       t3 = t0 * t3;
 
-      if (MathF.Abs(y) > MathF.Abs(x))
-      {
-        t3 = MathF.FusedMultiplyAdd(MathF.PI, 0.5f, -t3);
-      }
-      
-      if (x < 0)
-      {
-        t3 = MathF.PI - t3;
-      }
-      
-      if (y < 0)
-      {
-        return -t3;
-      }
+      if (MathF.Abs(y) > MathF.Abs(x)) t3 = MathF.FusedMultiplyAdd(MathF.PI, 0.5f, -t3);
+
+      if (x < 0) t3 = MathF.PI - t3;
+
+      if (y < 0) return -t3;
 
       return t3;
     }
@@ -68,13 +59,8 @@ namespace Fall.Shared
     {
       float f = degrees % 360f;
       if (f >= 180f)
-      {
         f -= 360f;
-      }
-      else if (f < -180f)
-      {
-        f += 360f;
-      }
+      else if (f < -180f) f += 360f;
       return f;
     }
   }

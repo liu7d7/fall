@@ -8,7 +8,8 @@ namespace Fall.Shared.Components
     public bool Movable;
 
     public collision() : base(type.COLLISION)
-    { }
+    {
+    }
 
     public override void Collide(fall_obj objIn, fall_obj other)
     {

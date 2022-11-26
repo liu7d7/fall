@@ -11,6 +11,7 @@ namespace Fall.Engine
     private const float _depthThreshold = 0.8f;
     private static readonly shader _john = new("Resource/Shader/john.vert", "Resource/Shader/john.frag");
     public static readonly shader BASIC = new("Resource/Shader/basic.vert", "Resource/Shader/basic.frag");
+    private static readonly shader WIDE_LINES = new("Resource/Shader/widelines2.vert", "Resource/Shader/widelines2.frag", "Resource/Shader/widelines2.geom");
 
     private static readonly shader
       _pixel = new("Resource/Shader/postprocess.vert", "Resource/Shader/pixelate.frag");
@@ -31,7 +32,7 @@ namespace Fall.Engine
       vao.attrib.FLOAT3,
       vao.attrib.FLOAT2, vao.attrib.FLOAT4);
 
-    public static readonly mesh LINE = new(mesh.draw_mode.LINE, _line, false, vao.attrib.FLOAT3,
+    public static readonly mesh LINE = new(mesh.draw_mode.LINE, WIDE_LINES, false, vao.attrib.FLOAT3,
       vao.attrib.FLOAT4);
 
     private static readonly mesh _post = new(mesh.draw_mode.TRIANGLE, null, false, vao.attrib.FLOAT2);
@@ -133,6 +134,7 @@ namespace Fall.Engine
       shader.SetMatrix4("_proj", _projection);
       shader.SetMatrix4("_lookAt", _lookAt);
       shader.SetFloat("_time", Environment.TickCount / 1000f % (MathF.PI * 2f));
+      shader.SetVector2("_radius", (2, 2));
     }
 
     public static void RenderPixelation(float pixWidth, float pixHeight)
@@ -187,6 +189,14 @@ namespace Fall.Engine
       _post.Render();
       shader.Unbind();
     }
+    
+    public static void Line(float x1, float y1, float x2, float y2, uint color)
+    {
+      LINE.Line(
+        LINE.Float3(x1, y1, 0).Float4(color).Next(),
+        LINE.Float3(x2, y2, 0).Float4(color).Next()
+      );
+    }
 
     public static void UpdateProjection()
     {
@@ -197,7 +207,7 @@ namespace Fall.Engine
         return;
       }
 
-      Matrix4.CreateOrthographic(Size.X, Size.Y, -1000, 3000, out _projection);
+      Matrix4.CreateOrthographicOffCenter(0, Size.X, Size.Y, 0, -1000, 3000, out _projection);
     }
 
     public static void UpdateLookAt(fall_obj cameraObj, bool rendering3d = true)

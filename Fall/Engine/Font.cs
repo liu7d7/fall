@@ -48,7 +48,7 @@ namespace Fall.Engine
       _ascent = asc * StbTrueType.stbtt_ScaleForPixelHeight(fontInfo, height);
 
       Texture = texture.load_from_buffer(bitmap, 2048, 2048, PixelFormat.Red, PixelInternalFormat.R8,
-        TextureMinFilter.NearestMipmapNearest, TextureMagFilter.Nearest);
+        TextureMinFilter.Nearest, TextureMagFilter.Nearest);
     }
 
     public static void Bind()
@@ -96,9 +96,9 @@ namespace Fall.Engine
         StbTrueType.stbtt_packedchar c = _chars[charCode - 32];
 
         float dxs = drawX + c.xoff * scale;
-        float dys = drawY - c.yoff * scale;
+        float dys = drawY + c.yoff * scale;
         float dx1S = drawX + c.xoff2 * scale;
-        float dy1S = drawY - c.yoff2 * scale;
+        float dy1S = drawY + c.yoff2 * scale;
 
         if (shadow)
         {
