@@ -192,7 +192,7 @@ namespace Fall.Engine
     {
       if (Rendering3d)
       {
-        Matrix4.CreatePerspectiveFieldOfView(camera.FOV, Size.X / (float)Size.Y, camera.NEAR, camera.FAR,
+        Matrix4.CreatePerspectiveFieldOfView(camera.FOV, Size.X / (float)Size.Y, camera.NEAR, camera.Far,
           out _projection);
         return;
       }

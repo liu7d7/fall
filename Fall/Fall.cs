@@ -20,6 +20,7 @@ namespace Fall
     public static float MouseDx, MouseDy, MouseX, MouseY;
     public static int Ticks;
     public static int InView;
+    public static bool FarCamera;
     
     private static readonly DebugProc _debugProcCallback = DebugCallback;
     private static GCHandle _debugProcCallbackHandle;
@@ -277,6 +278,7 @@ namespace Fall
       if (MouseState.WasButtonDown(MouseButton.Left)) CursorState = CursorState.Grabbed;
 
       if (KeyboardState.IsKeyPressed(Keys.O)) _outline = !_outline;
+      if (KeyboardState.IsKeyPressed(Keys.C)) FarCamera = !FarCamera;
 
       for (int j = 0; j < Math.Min(i, 10); j++)
       {

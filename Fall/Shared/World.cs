@@ -1,4 +1,5 @@
 ﻿using Fall.Engine;
+using Fall.Shared.Components;
 using OpenTK.Mathematics;
 
 namespace Fall.Shared
@@ -51,7 +52,10 @@ namespace Fall.Shared
         _chunks[(i + chunkPos.X, j + chunkPos.Y)].Mesh.Render();
       for (int i = 0; i < Objs.Count; i++)
       {
-        if ((Objs[i].Pos - fall.Player.Pos).Xz.LengthSquared > 72 * 256) continue;
+        float d = (Objs[i].Pos - fall.Player.Pos).Xz.LengthSquared;
+        if (d > 72 * 256) continue;
+        if (MathF.Abs(math.WrapDegrees(math.CalcAngleXz(fall.Player, Objs[i]) -
+                       fall.Player.Get<float_pos>(fall_obj.component.type.FLOAT_POS).LerpedYaw)) > 60 && d > 864) continue;
         Objs[i].Render();
       }
     }
