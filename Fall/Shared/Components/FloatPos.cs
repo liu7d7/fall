@@ -15,7 +15,7 @@ namespace Fall.Shared.Components
     public float Yaw;
     public float Z;
 
-    public float_pos()
+    public float_pos() : base(type.FLOAT_POS)
     {
       X = PrevX = Y = PrevY = Z = PrevZ = Yaw = PrevYaw = Pitch = PrevPitch = 0;
     }

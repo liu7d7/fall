@@ -90,7 +90,13 @@ namespace Fall
           obj.Add(comp);
           obj.Add(pos);
           obj.Add(new tree());
+          obj.Add(new tag(i == 0 && j == 0 ? 0 : rand.Next()));
           World.Objs.Add(obj);
+
+          if (i == 0 && j == 0)
+          {
+            Console.WriteLine(obj.Pos);
+          }
         }
       }
 
@@ -146,7 +152,7 @@ namespace Fall
         Player.Add(new player());
         Player.Add(new float_pos());
         Player.Add(new camera());
-        float_pos pos = Player.Get<float_pos>();
+        float_pos pos = Player.Get<float_pos>(fall_obj.component.type.FLOAT_POS);
         pos.Yaw = pos.PrevYaw = 180;
         pos.X = pos.PrevX = pos.Z = pos.PrevZ = -1;
         pos.Y = pos.PrevY = 25;
@@ -193,7 +199,7 @@ namespace Fall
     {
       base.OnRenderFrame(args);
 
-      Player.Get<camera>().update_camera_vectors();
+      Player.Get<camera>(fall_obj.component.type.CAMERA).update_camera_vectors();
       
       fbo.Unbind();
       GL.ClearColor(_c);
@@ -264,7 +270,7 @@ namespace Fall
 
       if (KeyboardState.IsKeyDown(Keys.Escape))
       {
-        Player.Get<camera>().FirstMouse = true;
+        Player.Get<camera>(fall_obj.component.type.CAMERA).FirstMouse = true;
         CursorState = CursorState.Normal;
       }
 

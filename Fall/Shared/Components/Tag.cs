@@ -5,7 +5,7 @@ namespace Fall.Shared.Components
     public int Id;
     public string Name;
 
-    public tag(int id, string name = "")
+    public tag(int id, string name = "") : base(type.TAG)
     {
       Id = id;
       Name = name;

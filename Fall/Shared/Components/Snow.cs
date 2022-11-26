@@ -17,15 +17,18 @@ namespace Fall.Shared.Components
     
     private float _landing = float.MaxValue;
     private readonly int _offset = rand.Next(0, 360);
+    
+    public snow() : base(type.SNOW)
+    { }
 
     public override void Render(fall_obj objIn)
     {
       base.Render(objIn);
       
       render_system.Push();
-      render_system.Translate(-objIn.Pos);
+      render_system.Translate(-objIn.LerpedPos);
       render_system.Scale(MathHelper.Clamp(1 - (Environment.TickCount - _landing) / 1000f, 0, 1));
-      render_system.Translate(objIn.Pos);
+      render_system.Translate(objIn.LerpedPos);
       _snow.Render(objIn.LerpedPos);
       render_system.Pop();
     }
@@ -34,7 +37,7 @@ namespace Fall.Shared.Components
     {
       base.Update(objIn);
 
-      float_pos pos = objIn.Get<float_pos>();
+      float_pos pos = objIn.Get<float_pos>(type.FLOAT_POS);
       pos.set_prev();
       
       if (pos.Y > world.HeightAt((pos.X, pos.Z)) - 0.5f)

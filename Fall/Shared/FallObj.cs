@@ -1,3 +1,4 @@
+using System.Reflection;
 using Fall.Shared.Components;
 using OpenTK.Mathematics;
 
@@ -5,45 +6,57 @@ namespace Fall.Shared
 {
   public class fall_obj
   {
-    private readonly Dictionary<Type, component> _cache = new();
+    private readonly component[] _cache = new component[(int)component.type.SIZE];
     public bool Updates;
     public bool Removed;
 
-    public Vector3 Pos => Get<float_pos>().to_vector3();
-    public Vector3 LerpedPos => Get<float_pos>().to_lerped_vector3();
+    public Vector3 Pos => Get<float_pos>(component.type.FLOAT_POS).to_vector3();
+    public Vector3 LerpedPos => Get<float_pos>(component.type.FLOAT_POS).to_lerped_vector3();
 
     public void Update()
     {
-      foreach (KeyValuePair<Type, component> component in _cache) component.Value.Update(this);
+      foreach (component component in _cache) component?.Update(this);
     }
 
     public void Render()
     {
-      foreach (KeyValuePair<Type, component> component in _cache) component.Value.Render(this);
+      foreach (component component in _cache) component?.Render(this);
     }
 
     public void Collide(fall_obj other)
     {
-      foreach (KeyValuePair<Type, component> component in _cache) component.Value.Collide(this, other);
+      foreach (component component in _cache) component?.Collide(this, other);
     }
 
     public void Add(component component)
     {
-      _cache[component.GetType()] = component;
+      _cache[(int)component.Type] = component;
     }
 
-    public T Get<T>() where T : component
+    public T Get<T>(component.type t) where T : component
     {
-      return _cache[typeof(T)] as T;
+      return (T)_cache[(int)t];
     }
 
-    public bool Has<T>() where T : component
+    public bool Has(component.type t)
     {
-      return _cache.ContainsKey(typeof(T));
+      return _cache[(int)t] != null;
     }
 
     public class component
     {
+      public readonly type Type;
+
+      protected component(type type)
+      {
+        Type = type;
+      }
+
+      public enum type
+      {
+        NOT_A_TYPE, CAMERA, COLLISION, FLOAT_POS, INT_POS, MODEL_3D, PLAYER, SNOW, TAG, TREE, SIZE
+      }
+      
       public virtual void Update(fall_obj objIn)
       {
       }
