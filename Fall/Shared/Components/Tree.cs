@@ -3,11 +3,14 @@
   public class tree : fall_obj.component
   {
 
+    public tree() : base(type.TREE)
+    { }
+
     public override void Update(fall_obj objIn)
     {
       base.Update(objIn);
 
-      if (fall.InView > 100) return;
+      if (fall.InView > 900) return;
       
       fall_obj obj = new()
       {

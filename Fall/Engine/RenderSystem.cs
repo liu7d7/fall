@@ -202,9 +202,9 @@ namespace Fall.Engine
 
     public static void UpdateLookAt(fall_obj cameraObj, bool rendering3d = true)
     {
-      if (!cameraObj.Has<float_pos>()) return;
+      if (!cameraObj.Has(fall_obj.component.type.FLOAT_POS)) return;
 
-      _camera = cameraObj.Get<float_pos>();
+      _camera = cameraObj.Get<float_pos>(fall_obj.component.type.FLOAT_POS);
       Rendering3d = rendering3d;
       if (!Rendering3d)
       {
@@ -212,7 +212,7 @@ namespace Fall.Engine
         return;
       }
 
-      camera comp = cameraObj.Get<camera>();
+      camera comp = cameraObj.Get<camera>(fall_obj.component.type.CAMERA);
       _lookAt = comp.get_camera_matrix();
     }
   }

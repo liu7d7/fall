@@ -18,7 +18,7 @@ namespace Fall.Shared.Components
       _capeShader = new shader("Resource/Shader/cape.vert", "Resource/Shader/basic.frag");
     }
 
-    public player()
+    public player() : base(type.PLAYER)
     {
       _color = colors.NextColor();
       _cape = new mesh(mesh.draw_mode.TRIANGLE, _capeShader, true, vao.attrib.FLOAT2);
@@ -46,7 +46,7 @@ namespace Fall.Shared.Components
       // render head
       _icosphere.Render(renderPos - offset + (0f, 4.25f, 0f));
 
-      float lyaw = objIn.Get<float_pos>().LerpedYaw + 180;
+      float lyaw = objIn.Get<float_pos>(type.FLOAT_POS).LerpedYaw + 180;
 
       _capeShader.Bind();
       _capeShader.SetFloat("_yaw", lyaw);

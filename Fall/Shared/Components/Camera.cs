@@ -8,7 +8,7 @@ namespace Fall.Shared.Components
   {
     public const float FOV = 45 * MathF.PI / 180f;
     public const float NEAR = 0.1f;
-    public const float FAR = 1028f;
+    public const float FAR = 128f;
     private readonly Vector3 _up;
     private Vector3 _front;
     private float _lastX;
@@ -20,7 +20,7 @@ namespace Fall.Shared.Components
 
     public bool FirstMouse = true;
 
-    public camera()
+    public camera() : base(type.CAMERA)
     {
       _front = Vector3.Zero;
       _right = Vector3.Zero;
@@ -40,7 +40,7 @@ namespace Fall.Shared.Components
     {
       base.Update(objIn);
 
-      _pos ??= objIn.Get<float_pos>();
+      _pos ??= objIn.Get<float_pos>(type.FLOAT_POS);
 
       _pos.set_prev();
 
@@ -106,7 +106,7 @@ namespace Fall.Shared.Components
 
       Vector3 pos = new(_pos.LerpedX, _pos.LerpedY, _pos.LerpedZ);
       pos.Y += 4f;
-      Vector3 eye = pos - _front * 525;
+      Vector3 eye = pos - _front * 25;
       eye.Y = Math.Max(eye.Y, world.HeightAt((eye.X, eye.Z)) + 0.33f);
       Matrix4 lookAt = Matrix4.LookAt(eye, pos, _up);
       return lookAt;

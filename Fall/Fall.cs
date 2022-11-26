@@ -100,47 +100,6 @@ namespace Fall
         }
       }
 
-      void placeTrees2()
-      {
-        model3d[] models = new model3d[5];
-        {
-          int i = 0;
-          foreach (string str in new[]
-                     { "large_tree", "large_tree_1", "large_tree_3", "large_tree_4", "large_tree_5" })
-          {
-            model3d model = model3d.Read(str, new Dictionary<string, uint>());
-            model.Scale(16f);
-            models[i] = model;
-            i++;
-          }
-        }
-        for (int i = 0; i < 5; i++)
-        {
-          for (int j = 0; j < i + 7; j++)
-          {
-            fall_obj obj = new()
-            {
-              Updates = true
-            };
-            model3d.component comp = new(models[i], rand.NextFloat() * 180);
-            float_pos pos = new()
-            {
-              X = (rand.NextFloat() - 0.5f) * 50,
-              Z = (rand.NextFloat() - 0.5f) * 50
-            };
-
-            pos.Y = world.HeightAt((pos.X, pos.Z)) - 2f;
-            pos.PrevX = pos.X;
-            pos.PrevY = pos.Y;
-            pos.PrevZ = pos.Z;
-            obj.Add(comp);
-            obj.Add(pos);
-            obj.Add(new tree());
-            World.Objs.Add(obj);
-          }
-        }
-      }
-
       void placeBushes()
       {
         model3d[] models = new model3d[3];
@@ -193,7 +152,7 @@ namespace Fall
         Player.Add(new player());
         Player.Add(new float_pos());
         Player.Add(new camera());
-        float_pos pos = Player.Get<float_pos>();
+        float_pos pos = Player.Get<float_pos>(fall_obj.component.type.FLOAT_POS);
         pos.Yaw = pos.PrevYaw = 180;
         pos.X = pos.PrevX = pos.Z = pos.PrevZ = -1;
         pos.Y = pos.PrevY = 25;
@@ -204,8 +163,8 @@ namespace Fall
       World = new world();
       World.Objs.Add(Player);
 
-      placeTrees2();
-      // placeBushes();
+      placeTrees();
+      placeBushes();
 
       World.Update();
     }
@@ -240,7 +199,7 @@ namespace Fall
     {
       base.OnRenderFrame(args);
 
-      Player.Get<camera>().update_camera_vectors();
+      Player.Get<camera>(fall_obj.component.type.CAMERA).update_camera_vectors();
       
       fbo.Unbind();
       GL.ClearColor(_c);
@@ -311,7 +270,7 @@ namespace Fall
 
       if (KeyboardState.IsKeyDown(Keys.Escape))
       {
-        Player.Get<camera>().FirstMouse = true;
+        Player.Get<camera>(fall_obj.component.type.CAMERA).FirstMouse = true;
         CursorState = CursorState.Normal;
       }
 

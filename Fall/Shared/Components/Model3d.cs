@@ -8,16 +8,20 @@ namespace Fall.Shared.Components
   public class model3d
   {
     private static readonly Dictionary<string, model3d> _components = new();
+    private static readonly shader _shader;
+    private static readonly ubo _ubo;
+    
     private readonly Vector2[] _texCoords;
-
     private readonly face[] _faces;
     private readonly Vector3[] _vertices;
-    private readonly shader _shader;
     private readonly mesh _mesh;
     private readonly List<Matrix4> _models = new();
-    private readonly List<Vector3> _translations = new();
-    private readonly List<int> _ids = new();
-    private readonly ubo _ubo;
+    
+    static model3d()
+    {
+      _shader = new shader("Resource/Shader/instanced.vert", "Resource/Shader/john.frag");
+      _ubo = new ubo(_shader, "_instanceInfo", "_model");
+    }
 
     private model3d(string path, Dictionary<string, uint> colors)
     {
@@ -79,14 +83,13 @@ namespace Fall.Shared.Components
       
       _mesh = new mesh(
         mesh.draw_mode.TRIANGLE,
-        _shader = new shader("Resource/Shader/instanced.vert", "Resource/Shader/john.frag"),
+        _shader,
         false,
         vao.attrib.FLOAT3,
         vao.attrib.FLOAT3,
         vao.attrib.FLOAT2,
         vao.attrib.FLOAT4
       );
-      _ubo = new ubo(_shader, "_instanceInfo", "_model", "_translate");
       ToMesh((0, 0, 0));
     }
 
@@ -169,11 +172,9 @@ namespace Fall.Shared.Components
       _mesh.End();
     }
     
-    public void Render(Vector3 pos, int id = -1)
+    public void Render(Vector3 pos)
     {
-      _models.Add(render_system.Model);
-      _translations.Add(pos);
-      _ids.Add(id);
+      _models.Add(Matrix4.CreateTranslation(pos) * render_system.Model);
     }
 
     public static void Draw()
@@ -182,27 +183,21 @@ namespace Fall.Shared.Components
       {
         model3d model = pair.Value;
         if (model._models.Count == 0) continue;
-        shader shader = model._shader;
         mesh mesh = model._mesh;
         
         Matrix4[] models = model._models.GetInternalArray();
-        Vector3[] translations = model._translations.GetInternalArray();
-        int[] ids = model._ids.GetInternalArray();
         
-        int count = model._models.Count;
+        int count = Math.Min(1024, model._models.Count);
         
-        shader.Bind();
-        model._ubo.PutAll(ref models, count, 0);
-        model._ubo.PutAll(ref translations, count, 1);
+        _shader.Bind();
+        _ubo.PutAll(ref models, count, 0);
         
-        model._ubo.BindTo(0);
+        _ubo.BindTo(0);
         mesh.RenderInstanced(count);
         
         shader.Unbind();
-        model._ubo.Clear();
+        _ubo.Clear();
         model._models.Clear();
-        model._translations.Clear();
-        model._ids.Clear();
       }
     }
 
@@ -222,14 +217,14 @@ namespace Fall.Shared.Components
       private readonly model3d _model;
       private readonly float _rotation;
 
-      public component(model3d model, func before, func after)
+      public component(model3d model, func before, func after) : base(type.MODEL_3D)
       {
         _model = model;
         _before = before;
         _after = after;
       }
 
-      public component(model3d model, float rot)
+      public component(model3d model, float rot) : base(type.MODEL_3D)
       {
         _model = model;
         _rotation = rot;
@@ -245,10 +240,10 @@ namespace Fall.Shared.Components
 
         _before(objIn);
         render_system.Push();
-        render_system.Translate(objIn.LerpedPos);
-        render_system.Rotate(_rotation, 0, 1, 0);
         render_system.Translate(-objIn.LerpedPos);
-        _model.Render(objIn.LerpedPos, objIn.Has<tag>() ? objIn.Get<tag>().Id : -1);
+        render_system.Rotate(_rotation, 0, 1, 0);
+        render_system.Translate(objIn.LerpedPos);
+        _model.Render(objIn.LerpedPos);
         render_system.Pop();
         _after(objIn);
       }

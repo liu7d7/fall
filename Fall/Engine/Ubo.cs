@@ -10,23 +10,23 @@ namespace Fall.Engine
   {
     private static int _active;
     private readonly int _handle;
-    private int[] _offsets;
-    private int _blkIdx;
-    private int _blkSize;
+    private readonly int[] _offsets;
+    private readonly int _blockIndex;
+    private readonly int _blockSize;
 
     public ubo(shader shdr, string blkName, params string[] names)
     {
       _handle = GL.GenBuffer();
-      _blkIdx = GL.GetUniformBlockIndex(shdr.Handle, blkName);
-      GL.GetActiveUniformBlock(shdr.Handle, _blkIdx, 
-        ActiveUniformBlockParameter.UniformBlockDataSize, out _blkSize);
+      _blockIndex = GL.GetUniformBlockIndex(shdr.Handle, blkName);
+      GL.GetActiveUniformBlock(shdr.Handle, _blockIndex, 
+        ActiveUniformBlockParameter.UniformBlockDataSize, out _blockSize);
       int[] indices = new int[names.Length];
       GL.GetUniformIndices(shdr.Handle, names.Length, names, indices);
       _offsets = new int[names.Length];
       GL.GetActiveUniforms(shdr.Handle, names.Length, indices, 
         ActiveUniformParameter.UniformOffset, _offsets);
       Bind();
-      GL.BufferData(BufferTarget.UniformBuffer, _blkSize, IntPtr.Zero, BufferUsageHint.DynamicDraw);
+      GL.BufferData(BufferTarget.UniformBuffer, _blockSize, IntPtr.Zero, BufferUsageHint.DynamicDraw);
       Unbind();
     }
 
@@ -47,41 +47,31 @@ namespace Fall.Engine
     {
       if (_active != _handle) Bind();
       GL.BufferSubData(BufferTarget.UniformBuffer, (IntPtr)_offsets[offset], size * Marshal.SizeOf<Matrix4>(), ref mats[0]);
-      Unbind();
     }
     
     public void PutAll(ref int[] ints, int size, int offset)
     {
       if (_active != _handle) Bind();
       GL.BufferSubData(BufferTarget.UniformBuffer, (IntPtr)_offsets[offset], size * sizeof(int), ref ints[0]);
-      Unbind();
     }
     
     public void PutAll(ref Vector3[] vecs, int size, int offset)
     {
       if (_active != _handle) Bind();
       GL.BufferSubData(BufferTarget.UniformBuffer, (IntPtr)_offsets[offset], size * Marshal.SizeOf<Vector3>(), ref vecs[0]);
-      Unbind();
+    }
+    
+    public void PutAll(ref Vector4[] vecs, int size, int offset)
+    {
+      if (_active != _handle) Bind();
+      GL.BufferSubData(BufferTarget.UniformBuffer, (IntPtr)_offsets[offset], size * Marshal.SizeOf<Vector4>(), ref vecs[0]);
     }
     
     public void BindTo(int bindingPoint)
     {
       GL.BindBufferBase(BufferRangeTarget.UniformBuffer, bindingPoint, _handle);
     }
-    
-    public void Write(object key)
-    {
-      float[] dat = new float[_blkSize / sizeof(float)];
-      Bind();
-      GL.GetBufferSubData(BufferTarget.UniformBuffer, IntPtr.Zero, _blkSize, dat);
-      StringBuilder sb = new();
-      for (int i = 0; i < _blkSize / sizeof(float); i++)
-      {
-        sb.Append(dat[i] + " ");
-      }
-      File.WriteAllText($"ubo{deterministic_random.NextInt(key, int.MaxValue)}.txt", sb.ToString());
-    }
-    
+
     public void Clear()
     {
       if (_active != _handle) Bind();
