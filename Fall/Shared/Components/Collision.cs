@@ -7,13 +7,13 @@ namespace Fall.Shared.Components
     public bounding_cylinder Cylinder;
     public bool Movable;
 
-    public collision() : base(type.COLLISION)
+    public collision() : base(fall_obj.comp_type.Collision)
     {
     }
 
     public override void Collide(fall_obj objIn, fall_obj other)
     {
-      collision ocol = other.Get<collision>(type.FLOAT_POS);
+      collision ocol = other.Get<collision>(fall_obj.comp_type.FloatPos);
       Cylinder.BottomCenter = objIn.Pos;
       ocol.Cylinder.BottomCenter = other.Pos;
       switch (Cylinder.Intersects(ocol.Cylinder))
@@ -30,20 +30,20 @@ namespace Fall.Shared.Components
           if (Movable && ocol.Movable)
           {
             amt /= 2;
-            objIn.Get<float_pos>(type.FLOAT_POS).X += ratio.X * amt;
-            objIn.Get<float_pos>(type.FLOAT_POS).Z += ratio.Y * amt;
-            other.Get<float_pos>(type.FLOAT_POS).X -= ratio.X * amt;
-            other.Get<float_pos>(type.FLOAT_POS).Z -= ratio.Y * amt;
+            float_pos.Get(objIn).X += ratio.X * amt;
+            float_pos.Get(objIn).Z += ratio.Y * amt;
+            float_pos.Get(objIn).X -= ratio.X * amt;
+            float_pos.Get(objIn).Z -= ratio.Y * amt;
           }
           else if (Movable)
           {
-            objIn.Get<float_pos>(type.FLOAT_POS).X += ratio.X * amt;
-            objIn.Get<float_pos>(type.FLOAT_POS).Z += ratio.Y * amt;
+            float_pos.Get(objIn).X += ratio.X * amt;
+            float_pos.Get(objIn).Z += ratio.Y * amt;
           }
           else if (ocol.Movable)
           {
-            other.Get<float_pos>(type.FLOAT_POS).X -= ratio.X * amt;
-            other.Get<float_pos>(type.FLOAT_POS).Z -= ratio.Y * amt;
+            float_pos.Get(objIn).X -= ratio.X * amt;
+            float_pos.Get(objIn).Z -= ratio.Y * amt;
           }
 
           break;
@@ -57,16 +57,16 @@ namespace Fall.Shared.Components
           if (Movable && ocol.Movable)
           {
             amt /= 2;
-            objIn.Get<float_pos>(type.FLOAT_POS).Y += amt;
-            other.Get<float_pos>(type.FLOAT_POS).Y -= amt;
+            float_pos.Get(objIn).Y += amt;
+            float_pos.Get(objIn).Y -= amt;
           }
           else if (Movable)
           {
-            objIn.Get<float_pos>(type.FLOAT_POS).Y += amt;
+            float_pos.Get(objIn).Y += amt;
           }
           else if (ocol.Movable)
           {
-            other.Get<float_pos>(type.FLOAT_POS).Y -= amt;
+            float_pos.Get(objIn).Y -= amt;
           }
 
           break;
@@ -80,16 +80,16 @@ namespace Fall.Shared.Components
           if (Movable && ocol.Movable)
           {
             amt /= 2;
-            objIn.Get<float_pos>(type.FLOAT_POS).Y -= amt;
-            other.Get<float_pos>(type.FLOAT_POS).Y += amt;
+            float_pos.Get(objIn).Y -= amt;
+            float_pos.Get(objIn).Y += amt;
           }
           else if (Movable)
           {
-            objIn.Get<float_pos>(type.FLOAT_POS).Y -= amt;
+            float_pos.Get(objIn).Y -= amt;
           }
           else if (ocol.Movable)
           {
-            other.Get<float_pos>(type.FLOAT_POS).Y += amt;
+            float_pos.Get(objIn).Y += amt;
           }
 
           break;

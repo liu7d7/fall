@@ -1,2 +1,4 @@
 xcopy "C:\Users\richard may clarkson\RiderProjects\Fall\Fall\Resource" "C:\Users\richard may clarkson\RiderProjects\Fall\Fall\bin\Debug\net6.0\Resource" /E /H /C /R /Q /Y
+xcopy "C:\Users\richard may clarkson\RiderProjects\Fall\Fall\Resource" "C:\Users\richard may clarkson\RiderProjects\Fall\Fall\bin\Debug\net7.0\Resource" /E /H /C /R /Q /Y
 xcopy "C:\Users\richard may clarkson\RiderProjects\Fall\Fall\Resource" "C:\Users\richard may clarkson\RiderProjects\Fall\Fall\bin\Release\net6.0\Resource" /E /H /C /R /Q /Y
+xcopy "C:\Users\richard may clarkson\RiderProjects\Fall\Fall\Resource" "C:\Users\richard may clarkson\RiderProjects\Fall\Fall\bin\Release\net7.0\Resource" /E /H /C /R /Q /Y

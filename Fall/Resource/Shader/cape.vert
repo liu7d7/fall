@@ -16,7 +16,7 @@ const float inc = 40. / segments;
 const float rad = 0.33f;
 
 float curve(float f) {
-    return pow(f, 1.65);
+    return pow(f, 1.55);
 }
 
 float func(float x) {

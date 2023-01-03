@@ -5,43 +5,43 @@ using OpenTK.Mathematics;
 
 namespace Fall.Engine
 {
-  public static class render_system
+  public static class glh
   {
     public const float THRESHOLD = 0.033f;
     private const float _depthThreshold = 0.8f;
-    private static readonly shader _john = new("Resource/Shader/john.vert", "Resource/Shader/john.frag");
-    public static readonly shader BASIC = new("Resource/Shader/basic.vert", "Resource/Shader/basic.frag");
-    private static readonly shader WIDE_LINES = new("Resource/Shader/widelines2.vert", "Resource/Shader/widelines2.frag", "Resource/Shader/widelines2.geom");
 
-    private static readonly shader
-      _pixel = new("Resource/Shader/postprocess.vert", "Resource/Shader/pixelate.frag");
-
-    private static readonly shader _fxaa = new("Resource/Shader/fxaa.vert", "Resource/Shader/fxaa.frag");
-    private static readonly shader _line = new("Resource/Shader/lines.vert", "Resource/Shader/basic.frag");
-
-    private static readonly shader
-      _outline = new("Resource/Shader/postprocess.vert", "Resource/Shader/outline.frag");
+    public static readonly shader BASIC = new("basic", "basic");
+    private static readonly shader _john = new("john", "john");
+    private static readonly shader _wideLines = new("widelines2", "widelines2", "widelines2");
+    private static readonly shader _pixel = new("postprocess", "pixelate");
+    private static readonly shader _fxaa = new("fxaa", "fxaa");
+    private static readonly shader _outline = new("postprocess", "outline");
+    private static readonly shader _blobs = new("blobs", "blobs");
+    private static readonly shader _outlineWatercolor = new("sobel", "outlinewatercolor");
+    private static readonly shader _outlineCombine = new("sobel", "outlinecombine");
+    private static readonly shader _blur = new("sobel", "blur");
 
     private static Matrix4 _projection;
     private static Matrix4 _lookAt;
     private static readonly Matrix4[] _model = new Matrix4[7];
     private static int _modelIdx;
-    public static bool RenderingRed;
 
-    public static readonly mesh MESH = new(mesh.draw_mode.TRIANGLE, _john, false, vao.attrib.FLOAT3,
-      vao.attrib.FLOAT3,
-      vao.attrib.FLOAT2, vao.attrib.FLOAT4);
+    public static readonly mesh MESH = new(mesh.draw_mode.TRIANGLE, _john, false, vao.attrib.Float3,
+      vao.attrib.Float2, vao.attrib.Float4);
 
-    public static readonly mesh LINE = new(mesh.draw_mode.LINE, WIDE_LINES, false, vao.attrib.FLOAT3,
-      vao.attrib.FLOAT4);
+    public static readonly mesh LINE = new(mesh.draw_mode.LINE, _wideLines, false, vao.attrib.Float3,
+      vao.attrib.Float4);
 
-    private static readonly mesh _post = new(mesh.draw_mode.TRIANGLE, null, false, vao.attrib.FLOAT2);
-    public static readonly fbo FRAME = new(1, 1, true);
-    public static readonly fbo SWAP = new(1, 1, true);
+    private static readonly mesh _post = new(mesh.draw_mode.TRIANGLE, null, false, vao.attrib.Float2);
+
+    public static readonly fbo FRAME0 = new(1, 1, true);
+    public static readonly fbo FRAME1 = new(1, 1, true);
+    public static readonly fbo FRAME2 = new(1, 1, true);
     public static bool Rendering3d;
+    public static bool RenderingRed;
     private static float_pos _camera;
 
-    static render_system()
+    static glh()
     {
       Array.Fill(_model, Matrix4.Identity);
     }
@@ -54,10 +54,10 @@ namespace Fall.Engine
     {
       _post.Begin();
       _post.Quad(
-        _post.Float2(0, 0).Next(),
-        _post.Float2(Size.X, 0).Next(),
-        _post.Float2(Size.X, Size.Y).Next(),
-        _post.Float2(0, Size.Y).Next()
+        _post.Float2(-1, -1).Next(),
+        _post.Float2(1, -1).Next(),
+        _post.Float2(1, 1).Next(),
+        _post.Float2(-1, 1).Next()
       );
       _post.End();
     }
@@ -73,11 +73,6 @@ namespace Fall.Engine
       _modelIdx--;
     }
 
-    public static void Translate(float x, float y, float z)
-    {
-      Model.Translate(x, y, z);
-    }
-
     public static void Translate(Vector3 vec)
     {
       Model.Translate(vec);
@@ -86,21 +81,6 @@ namespace Fall.Engine
     public static void Rotate(float angle, float x, float y, float z)
     {
       Model.Rotate(angle, x, y, z);
-    }
-
-    public static void Rotate(float angle, Vector3 vec)
-    {
-      Model.Rotate(angle, vec);
-    }
-
-    public static void Scale(float x, float y, float z)
-    {
-      Model.Scale(x, y, z);
-    }
-
-    public static void Scale(Vector3 vec)
-    {
-      Model.Scale(vec);
     }
 
     public static void Scale(float scale)
@@ -119,11 +99,6 @@ namespace Fall.Engine
         ((val >> 24) & 0xff) / 255f);
     }
 
-    public static uint ToUInt(this Color4 color)
-    {
-      return (uint)color.ToArgb();
-    }
-
     public static void SetDefaults(this shader shader)
     {
       shader.SetInt("_renderingRed", RenderingRed ? 1 : 0);
@@ -139,22 +114,23 @@ namespace Fall.Engine
 
     public static void RenderPixelation(float pixWidth, float pixHeight)
     {
-      FRAME.ClearColor();
-      FRAME.ClearDepth();
-      FRAME.Bind();
+      FRAME1.ClearColor();
+      FRAME1.ClearDepth();
+      FRAME1.Bind();
       _pixel.Bind();
-      SWAP.BindColor(TextureUnit.Texture0);
+      FRAME0.BindColor(TextureUnit.Texture0);
       _pixel.SetInt("_tex0", 0);
       _pixel.SetVector2("_screenSize", (Size.X, Size.Y));
       _pixel.SetVector2("_pixSize", (pixWidth, pixHeight));
       _post.Render();
+      FRAME1.Blit(FRAME0.Handle);
       shader.Unbind();
     }
 
     public static void RenderFxaa(fbo fbo)
     {
-      fbo.Blit(SWAP.Handle);
-      SWAP.Bind();
+      fbo.Blit(FRAME1.Handle);
+      FRAME1.Bind();
       _fxaa.Bind();
       fbo.BindColor(TextureUnit.Texture0);
       _fxaa.SetInt("_tex0", 0);
@@ -164,32 +140,96 @@ namespace Fall.Engine
       _fxaa.SetVector2("_screenSize", (Size.X, Size.Y));
       _post.Render();
       shader.Unbind();
-      SWAP.Blit(fbo.Handle);
+      FRAME1.Blit(fbo.Handle);
     }
 
     public static void RenderOutline()
     {
-      FRAME.ClearColor();
-      FRAME.ClearDepth();
-      FRAME.Bind();
+      FRAME0.ClearColor();
+      FRAME0.ClearDepth();
+      FRAME0.Bind();
       _outline.Bind();
-      SWAP.BindColor(TextureUnit.Texture0);
+      FRAME1.BindColor(TextureUnit.Texture0);
       _outline.SetInt("_tex0", 0);
-      SWAP.BindDepth(TextureUnit.Texture1);
+      FRAME1.BindDepth(TextureUnit.Texture1);
       _outline.SetInt("_tex1", 1);
       _outline.SetInt("_abs", 1);
-      _outline.SetInt("_glow", 1);
+      _outline.SetInt("_glow", 0);
       _outline.SetInt("_blackAndWhite", 1);
       _outline.SetFloat("_width", 1f);
       _outline.SetFloat("_threshold", THRESHOLD);
       _outline.SetFloat("_depthThreshold", _depthThreshold);
       _outline.SetVector2("_screenSize", (Size.X, Size.Y));
-      _outline.SetVector4("_outlineColor", fall.PINK.ToVector4());
+      _outline.SetVector4("_outlineColor", fall.PINK0.ToVector4());
       _outline.SetVector4("_otherColor", Color4.White.ToVector4());
       _post.Render();
       shader.Unbind();
     }
-    
+
+    public static void RenderOutlineWaterColor()
+    {
+      FRAME1.Clear();
+      _outlineWatercolor.Bind();
+      _outlineWatercolor.SetFloat("_lumaRamp", 16f);
+      _outlineWatercolor.SetVector2("_screenSize", (Size.X, Size.Y));
+      FRAME1.Bind();
+      FRAME0.BindColor(0);
+      _outlineWatercolor.SetInt("_tex0", 0);
+      _post.Render();
+      FRAME1.Blit(FRAME0.Handle);
+    }
+
+    public static void RenderBokeh(float radius)
+    {
+      FRAME1.Clear();
+      FRAME2.Clear();
+
+      _blobs.Bind();
+      _blobs.SetFloat("_radius", radius);
+      _blobs.SetVector2("_screenSize", (Size.X, Size.Y));
+      FRAME1.Bind();
+      FRAME0.BindColor(0);
+      _blobs.SetInt("_tex0", 0);
+      _post.Render();
+
+      _outlineWatercolor.Bind();
+      _outlineWatercolor.SetFloat("_lumaRamp", 16f);
+      _outlineWatercolor.SetVector2("_screenSize", (Size.X, Size.Y));
+      FRAME0.Bind();
+      FRAME1.BindColor(0);
+      _outlineWatercolor.SetInt("_tex0", 0);
+      _post.Render();
+
+      _blur.Bind();
+      _blur.SetVector2("_blurDir", (0f, 0.8f));
+      _blur.SetVector2("_screenSize", (Size.X, Size.Y));
+      _blur.SetFloat("_radius", radius * 2);
+      FRAME2.Bind();
+      FRAME0.BindColor(0);
+      _blur.SetInt("_tex0", 0);
+      _post.Render();
+
+      _blur.Bind();
+      _blur.SetVector2("_blurDir", (0.8f, 0f));
+      _blur.SetVector2("_screenSize", (Size.X, Size.Y));
+      _blur.SetFloat("_radius", radius * 2);
+      FRAME0.Bind();
+      FRAME2.BindColor(0);
+      _blur.SetInt("_tex0", 0);
+      _post.Render();
+
+      _outlineCombine.Bind();
+      _outlineCombine.SetVector2("_screenSize", (Size.X, Size.Y));
+      FRAME2.Bind();
+      FRAME1.BindColor(0);
+      _outlineCombine.SetInt("_tex0", 0);
+      FRAME0.BindColor(1);
+      _outlineCombine.SetInt("_tex1", 1);
+      _post.Render();
+
+      FRAME2.Blit(FRAME0.Handle);
+    }
+
     public static void Line(float x1, float y1, float x2, float y2, uint color)
     {
       LINE.Line(
@@ -206,15 +246,15 @@ namespace Fall.Engine
           out _projection);
         return;
       }
-
+  
       Matrix4.CreateOrthographicOffCenter(0, Size.X, Size.Y, 0, -1000, 3000, out _projection);
     }
 
     public static void UpdateLookAt(fall_obj cameraObj, bool rendering3d = true)
     {
-      if (!cameraObj.Has(fall_obj.component.type.FLOAT_POS)) return;
+      if (!cameraObj.Has(fall_obj.comp_type.FloatPos)) return;
 
-      _camera = cameraObj.Get<float_pos>(fall_obj.component.type.FLOAT_POS);
+      _camera = float_pos.Get(cameraObj);
       Rendering3d = rendering3d;
       if (!Rendering3d)
       {
@@ -222,7 +262,7 @@ namespace Fall.Engine
         return;
       }
 
-      camera comp = cameraObj.Get<camera>(fall_obj.component.type.CAMERA);
+      camera comp = camera.Get(cameraObj);
       _lookAt = comp.get_camera_matrix();
     }
   }

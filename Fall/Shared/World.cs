@@ -1,4 +1,5 @@
-﻿using Fall.Engine;
+﻿using System.Buffers;
+using Fall.Engine;
 using Fall.Shared.Components;
 using OpenTK.Mathematics;
 
@@ -7,7 +8,7 @@ namespace Fall.Shared
   public class world
   {
     private readonly Dictionary<Vector2i, chunk> _chunks;
-    public readonly List<fall_obj> Objs = new();
+    public readonly list<fall_obj> Objs = new();
 
     private Vector2i _prevCPos;
 
@@ -15,30 +16,40 @@ namespace Fall.Shared
     {
       _chunks = new Dictionary<Vector2i, chunk>();
     }
+    
+    private static readonly Func<fall_obj, bool> _removed = obj => obj.Removed;
+    private static readonly Action<fall_obj> _ifRemoved = delegate(fall_obj obj)
+    {
+      ArrayPool<fall_obj.component>.Shared.Return(obj.Components, true);
+    };
 
     public void Update()
     {
       int k = 0;
+      Span<fall_obj> objs = Objs.Items;
       for (int i = 0; i < Objs.Count; i++)
       {
-        if (!Objs[i].Updates || (Objs[i].Pos - fall.Player.Pos).Xz.LengthSquared > 72 * 256) continue;
-        Objs[i].Update();
+        if (!objs[i].Updates || (objs[i].Pos - fall.Player.Pos).Xz.LengthSquared > 72 * 256)
+          continue;
+        objs[i].Update();
         k++;
       }
 
       fall.InView = k;
 
-      Objs.RemoveAll(it => it.Removed);
+      Objs.RemoveAll(_removed, _ifRemoved);
 
       Vector2i chunkPos = fall.Player.Pos.Xz.ToChunkPos();
-      if (_prevCPos == chunkPos) return;
+      if (_prevCPos == chunkPos)
+        return;
 
       for (int i = -12; i <= 12; i++)
       for (int j = -12; j <= 12; j++)
       {
         int i1 = i + chunkPos.X;
         int j1 = j + chunkPos.Y;
-        if (!_chunks.ContainsKey((i1, j1))) _chunks[(i1, j1)] = new chunk((i1, j1));
+        if (!_chunks.ContainsKey((i1, j1)))
+          _chunks[(i1, j1)] = new chunk((i1, j1));
       }
 
       _prevCPos = chunkPos;
@@ -47,22 +58,27 @@ namespace Fall.Shared
     public void Render()
     {
       Vector2i chunkPos = fall.Player.Pos.Xz.ToChunkPos();
-      float lyaw = fall.Player.Get<float_pos>(fall_obj.component.type.FLOAT_POS).LerpedYaw;
+      float lyaw = float_pos.Get(fall.Player).LerpedYaw;
       for (int i = -8; i <= 8; i++)
       for (int j = -8; j <= 8; j++)
       {
-        int len = i * i + j * j;
-        if (i * i + j * j > 81) continue;
-        if (MathF.Abs(math.WrapDegrees(math.CalcAngle(j, i) - lyaw)) > 75 && len > 9) continue;
+        int d = i * i + j * j;
+        if (d > 81)
+          continue;
+        if (MathF.Abs(math.WrapDegrees(math.CalcAngle(j, i) - lyaw)) > 70 && d > 9)
+          continue;
         _chunks[(i + chunkPos.X, j + chunkPos.Y)].Mesh.Render();
       }
-      
+
+      Span<fall_obj> objs = Objs.Items;
       for (int i = 0; i < Objs.Count; i++)
       {
-        float d = (Objs[i].Pos - fall.Player.Pos).Xz.LengthSquared;
-        if (d > 72 * 256) continue;
-        if (MathF.Abs(math.WrapDegrees(math.CalcAngleXz(fall.Player, Objs[i]) - lyaw)) > 60 && d > 864) continue;
-        Objs[i].Render();
+        float d = (objs[i].Pos - fall.Player.Pos).Xz.LengthSquared;
+        if (d > 72 * 256)
+          continue;
+        if (MathF.Abs(math.WrapDegrees(math.CalcAngleXz(fall.Player, objs[i]) - lyaw)) > 65 && d > 864)
+          continue;
+        objs[i].Render();
       }
     }
 
@@ -75,12 +91,12 @@ namespace Fall.Shared
   public struct chunk
   {
     public readonly mesh Mesh;
-    private const float _div = 30f;
+    private const float _div = 24f;
     private const int _wh = 16;
 
     public chunk(Vector2i chunkPos)
     {
-      Mesh = new mesh(mesh.draw_mode.TRIANGLE, render_system.BASIC, true, vao.attrib.FLOAT3);
+      Mesh = new mesh(mesh.draw_mode.TRIANGLE, glh.BASIC, true, vao.attrib.Float3);
 
       Span<int> memo = stackalloc int[(_wh + 1) * (_wh + 1)];
       for (int i = 0; i < memo.Length; i++) memo[i] = -1;
@@ -114,7 +130,7 @@ namespace Fall.Shared
 
     private static float Noise(int x, int y)
     {
-      return SimplexNoise.Noise.CalcPixel2D(x, y, 0.0125f) / _div;
+      return SimplexNoise.Noise.CalcPixel2D(x, y, 0.01f) / _div;
     }
 
     public static float height_at(Vector2 vec)

@@ -1,3 +1,4 @@
+using System.Buffers;
 using Fall.Shared.Components;
 using OpenTK.Mathematics;
 
@@ -5,63 +6,81 @@ namespace Fall.Shared
 {
   public class fall_obj
   {
-    private readonly component[] _cache = new component[(int)component.type.SIZE];
+    public readonly component[] Components = ArrayPool<component>.Shared.Rent((int)comp_type.Size);
+    public readonly Guid Id = Guid.NewGuid();
     public bool Removed;
     public bool Updates;
 
-    public Vector3 Pos => Get<float_pos>(component.type.FLOAT_POS).to_vector3();
-    public Vector3 LerpedPos => Get<float_pos>(component.type.FLOAT_POS).to_lerped_vector3();
+    public Vector3 Pos => Has(comp_type.FloatPos) ? float_pos.Get(this).ToVec3() : float_pos_static.Get(this).ToVec3();
+    public Vector3 LerpedPos => Has(comp_type.FloatPos) ? float_pos.Get(this).ToLerpedVec3() : float_pos_static.Get(this).ToVec3();
 
     public void Update()
     {
-      foreach (component component in _cache) component?.Update(this);
+      Span<component> c = Components;
+      for (int i = 0; i < Components.Length; i++)
+      {
+        c[i]?.Update(this);
+      }
     }
 
     public void Render()
     {
-      foreach (component component in _cache) component?.Render(this);
+      Span<component> c = Components;
+      for (int i = 0; i < Components.Length; i++)
+      {
+        c[i]?.Render(this);
+      }
     }
 
     public void Collide(fall_obj other)
     {
-      foreach (component component in _cache) component?.Collide(this, other);
+      Span<component> c = Components;
+      for (int i = 0; i < Components.Length; i++)
+      {
+        c[i]?.Collide(this, other);
+      }
     }
 
     public void Add(component component)
     {
-      _cache[(int)component.Type] = component;
+      Components[(int)component.Type] = component;
     }
 
-    public T Get<T>(component.type t) where T : component
+    public T Get<T>(comp_type t) where T : component
     {
-      return (T)_cache[(int)t];
+      return (T)Components[(int)t];
     }
 
-    public bool Has(component.type t)
+    public bool Has(comp_type t)
     {
-      return _cache[(int)t] != null;
+      return Components[(int)t] != null;
+    }
+
+    public static bool operator ==(fall_obj one, fall_obj two)
+    {
+      return one?.Equals(two) ?? false;
+    }
+
+    public static bool operator !=(fall_obj one, fall_obj two)
+    {
+      return !(one == two);
+    }
+
+    public override bool Equals(object obj)
+    {
+      return obj is fall_obj other && Id.Equals(other.Id);
+    }
+
+    public override int GetHashCode()
+    {
+      return Id.GetHashCode();
     }
 
     public class component
     {
-      public enum type
-      {
-        NOT_A_TYPE,
-        CAMERA,
-        COLLISION,
-        FLOAT_POS,
-        INT_POS,
-        MODEL_3D,
-        PLAYER,
-        SNOW,
-        TAG,
-        TREE,
-        SIZE
-      }
+      public readonly comp_type Type;
 
-      public readonly type Type;
-
-      protected component(type type)
+      protected component(comp_type type)
       {
         Type = type;
       }
@@ -82,6 +101,22 @@ namespace Fall.Shared
       {
         return GetType().GetHashCode();
       }
+    }
+
+    public enum comp_type
+    {
+      NotAType,
+      Camera,
+      Collision,
+      FloatPos,
+      Model3D,
+      Player,
+      Snow,
+      Tag,
+      Tree,
+      Projectile,
+      FloatPosStatic,
+      Size,
     }
   }
 }

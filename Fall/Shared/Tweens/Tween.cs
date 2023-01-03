@@ -13,9 +13,6 @@ namespace Fall.Shared.Tweens
       Infinite = repeating;
       Duration = duration;
     }
-
-    public bool PastHalf => Environment.TickCount - LastActivation > Duration / 2;
-
     public override float Output()
     {
       return MathHelper.Clamp(

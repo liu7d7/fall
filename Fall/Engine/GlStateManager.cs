@@ -7,7 +7,6 @@ namespace Fall.Engine
     private static bool _depthEnabled;
     private static bool _blendEnabled;
     private static bool _cullEnabled;
-    private static bool _depthMask;
 
     private static bool _depthSaved;
     private static bool _blendSaved;
@@ -48,13 +47,6 @@ namespace Fall.Engine
       if (!_depthEnabled) return;
       _depthEnabled = false;
       GL.Disable(EnableCap.DepthTest);
-    }
-
-    public static void DepthMask(bool depthMask)
-    {
-      if (_depthMask == depthMask) return;
-      _depthMask = depthMask;
-      GL.DepthMask(depthMask);
     }
 
     public static void EnableBlend()

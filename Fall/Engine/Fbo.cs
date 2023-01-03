@@ -4,7 +4,6 @@ namespace Fall.Engine
 {
   public class fbo
   {
-    private static int _active;
     private static readonly Dictionary<int, fbo> _frames = new();
     private readonly bool _multisample;
     private readonly bool _useDepth;
@@ -13,16 +12,6 @@ namespace Fall.Engine
     private int _height;
     private int _width;
     public int Handle;
-
-    public fbo(int width, int height)
-    {
-      _width = width;
-      _height = height;
-      _useDepth = false;
-      Handle = -1;
-      Init();
-      _frames[Handle] = this;
-    }
 
     public fbo(int width, int height, bool useDepth)
     {
@@ -70,14 +59,12 @@ namespace Fall.Engine
       else
       {
         GL.BindTexture(TextureTarget.Texture2D, _colorAttachment);
-        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter,
-          (int)TextureMinFilter.Linear);
-        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter,
-          (int)TextureMagFilter.Linear);
+        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
         GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS,
-          (int)TextureWrapMode.ClampToBorder);
+          (int)TextureWrapMode.MirroredRepeat);
         GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT,
-          (int)TextureWrapMode.ClampToBorder);
+          (int)TextureWrapMode.MirroredRepeat);
         GL.TexStorage2D(TextureTarget2d.Texture2D, 1, SizedInternalFormat.Rgba12, _width, _height);
         GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0,
           TextureTarget.Texture2D, _colorAttachment, 0);
@@ -103,10 +90,8 @@ namespace Fall.Engine
             (int)TextureMagFilter.Nearest);
           GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureCompareMode,
             (int)TextureCompareMode.None);
-          GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS,
-            (int)TextureWrapMode.ClampToEdge);
-          GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT,
-            (int)TextureWrapMode.ClampToEdge);
+          GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+          GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
           GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent, _width, _height, 0,
             PixelFormat.DepthComponent, PixelType.UnsignedInt, IntPtr.Zero);
           GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment,
@@ -136,15 +121,28 @@ namespace Fall.Engine
 
     public void BindColor(TextureUnit unit)
     {
-      texture.Bind(_colorAttachment, unit);
+      image2d.Bind(_colorAttachment, unit);
     }
 
-    public int BindDepth(TextureUnit unit)
+    public void BindColor(int unit)
     {
-      if (!_useDepth) throw new Exception("Trying to bind depth texture of a framebuffer without depth!");
+      image2d.Bind(_colorAttachment, TextureUnit.Texture0 + unit);
+    }
 
-      texture.Bind(_depthAttachment, unit);
-      return _depthAttachment;
+    public void BindDepth(TextureUnit unit)
+    {
+      if (!_useDepth)
+        throw new Exception("Trying to bind depth texture of a framebuffer without depth!");
+
+      image2d.Bind(_depthAttachment, unit);
+    }
+
+    public void BindDepth(int unit)
+    {
+      if (!_useDepth)
+        throw new Exception("Trying to bind depth texture of a framebuffer without depth!");
+
+      image2d.Bind(_depthAttachment, TextureUnit.Texture0 + unit);
     }
 
     public void ClearColor()
@@ -161,12 +159,16 @@ namespace Fall.Engine
       Unbind();
     }
 
+    public void Clear()
+    {
+      ClearColor();
+      if (_useDepth)
+        ClearDepth();
+    }
+
     public void Bind()
     {
-      if (Handle == _active) return;
-
       GL.BindFramebuffer(FramebufferTarget.Framebuffer, Handle);
-      _active = Handle;
     }
 
     public void Blit(int other = 0)
@@ -185,7 +187,6 @@ namespace Fall.Engine
     public static void Unbind()
     {
       GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-      _active = 0;
     }
   }
 }

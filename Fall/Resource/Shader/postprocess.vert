@@ -8,7 +8,7 @@ out vec2 v_TexCoords;
 out vec2 v_Pos;
 
 void main() {
-    gl_Position = vec4((pos / _screenSize) * 2 - 1, 0, 1);
-    v_TexCoords = pos / _screenSize;
-    v_Pos = pos;
+    gl_Position = vec4(pos, 0, 1);
+    v_TexCoords = pos * 0.5 + 0.5;
+    v_Pos = v_TexCoords * _screenSize;
 }

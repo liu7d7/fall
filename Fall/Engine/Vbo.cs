@@ -1,11 +1,11 @@
+using System.Buffers;
 using OpenTK.Graphics.OpenGL4;
 
 namespace Fall.Engine
 {
   public class vbo
   {
-    private static int _active;
-    private readonly byte[] _bitDest = new byte[4];
+    private static readonly byte[] _bitDest = new byte[4];
     private readonly int _handle;
     private readonly bool _static;
     private int _count;
@@ -14,27 +14,30 @@ namespace Fall.Engine
     public vbo(int initialCapacity, bool @static)
     {
       _handle = GL.GenBuffer();
-      _vertices = new byte[initialCapacity];
+      _vertices = ArrayPool<byte>.Shared.Rent(initialCapacity);
       _static = @static;
     }
 
     public void Bind()
     {
-      if (_handle == _active) return;
       GL.BindBuffer(BufferTarget.ArrayBuffer, _handle);
-      _active = _handle;
     }
 
     public static void Unbind()
     {
       GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-      _active = 0;
     }
 
     public void Put(float element)
     {
       BitConverter.TryWriteBytes(_bitDest, element);
-      if (_count + 4 > _vertices.Length) Array.Resize(ref _vertices, _vertices.Length * 2);
+      if (_count + 4 > _vertices.Length)
+      {
+        ArrayPool<byte>.Shared.Return(_vertices);
+        byte[] prev = _vertices;
+        _vertices = ArrayPool<byte>.Shared.Rent(_vertices.Length * 2);
+        Array.Copy(prev, _vertices, _count);
+      }
       _vertices[_count] = _bitDest[0];
       _vertices[_count + 1] = _bitDest[1];
       _vertices[_count + 2] = _bitDest[2];
@@ -44,7 +47,7 @@ namespace Fall.Engine
 
     public void Upload(bool unbindAfter = true)
     {
-      if (_active != _handle) Bind();
+      Bind();
       GL.BufferData(BufferTarget.ArrayBuffer, _count, _vertices,
         _static ? BufferUsageHint.StaticDraw : BufferUsageHint.DynamicDraw);
       if (unbindAfter) Unbind();

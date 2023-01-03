@@ -25,7 +25,7 @@ void main()
 
     vec2 ndc_a = gl_in[0].gl_Position.xy / gl_in[0].gl_Position.w;
     vec2 ndc_b = gl_in[1].gl_Position.xy / gl_in[1].gl_Position.w;
-    
+
     vec2 line_vector = ndc_b - ndc_a;
     vec2 viewport_line_vector = line_vector * _screenSize;
     vec2 dir = normalize(vec2(line_vector.x, line_vector.y * u_aspect_ratio));
@@ -39,7 +39,7 @@ void main()
     vec2 normal_a  = vec2(line_width_a/u_width, line_width_a/u_height) * normal;
     vec2 normal_b  = vec2(line_width_b/u_width, line_width_b/u_height) * normal;
     vec2 extension = vec2(extension_length / u_width, extension_length / u_height) * dir;
-    
+
     g_compare = vec2(-1);
 
     g_col = vec4(v_col[0].rgb, v_col[0].a * min(v_line_width[0], 1.0f));
@@ -48,7 +48,7 @@ void main()
     g_line_width = line_width_a;
     g_line_length = line_length * 0.5;
     gl_Position = vec4((ndc_a + normal_a) * gl_in[0].gl_Position.w, gl_in[0].gl_Position.zw);
-//    g_pos = gl_Position.xy;
+    //    g_pos = gl_Position.xy;
     g_pos = ndc_a + normal_a;
     EmitVertex();
 
@@ -57,7 +57,7 @@ void main()
     g_line_width = line_width_a;
     g_line_length = line_length * 0.5;
     gl_Position = vec4((ndc_a - normal_a) * gl_in[0].gl_Position.w, gl_in[0].gl_Position.zw);
-//    g_pos = gl_Position.xy;
+    //    g_pos = gl_Position.xy;
     g_pos = ndc_a - normal_a;
     EmitVertex();
 
@@ -66,7 +66,7 @@ void main()
     g_line_width = line_width_b;
     g_line_length = line_length * 0.5;
     gl_Position = vec4((ndc_b + normal_b) * gl_in[1].gl_Position.w, gl_in[1].gl_Position.zw);
-//    g_pos = gl_Position.xy;
+    //    g_pos = gl_Position.xy;
     g_pos = ndc_b + normal_b;
     EmitVertex();
 
@@ -75,12 +75,12 @@ void main()
     g_line_width = line_width_b;
     g_line_length = line_length * 0.5;
     gl_Position = vec4((ndc_b - normal_b) * gl_in[1].gl_Position.w, gl_in[1].gl_Position.zw);
-//    g_pos = gl_Position.xy;
+    //    g_pos = gl_Position.xy;
     g_pos = ndc_b - normal_b;
     EmitVertex();
 
     EndPrimitive();
-    
+
     g_compare = ndc_a;
 
     g_col = vec4(v_col[0].rgb, v_col[0].a * min(v_line_width[0], 1.0f));
@@ -89,7 +89,7 @@ void main()
     g_line_width = line_width_a;
     g_line_length = line_length * 0.5;
     gl_Position = vec4((ndc_a + normal_a - extension) * gl_in[0].gl_Position.w, gl_in[0].gl_Position.zw);
-//    g_pos = gl_Position.xy;
+    //    g_pos = gl_Position.xy;
     g_pos = ndc_a + normal_a - extension;
     EmitVertex();
 
@@ -98,7 +98,7 @@ void main()
     g_line_width = line_width_a;
     g_line_length = line_length * 0.5;
     gl_Position = vec4((ndc_a - normal_a - extension) * gl_in[0].gl_Position.w, gl_in[0].gl_Position.zw);
-//    g_pos = gl_Position.xy;
+    //    g_pos = gl_Position.xy;
     g_pos = ndc_a - normal_a - extension;
     EmitVertex();
 
@@ -107,7 +107,7 @@ void main()
     g_line_width = line_width_b;
     g_line_length = line_length * 0.5;
     gl_Position = vec4((ndc_a + normal_a) * gl_in[0].gl_Position.w, gl_in[0].gl_Position.zw);
-//    g_pos = gl_Position.xy;
+    //    g_pos = gl_Position.xy;
     g_pos = ndc_a + normal_a;
     EmitVertex();
 
@@ -116,7 +116,7 @@ void main()
     g_line_width = line_width_b;
     g_line_length = line_length * 0.5;
     gl_Position = vec4((ndc_a - normal_a) * gl_in[0].gl_Position.w, gl_in[0].gl_Position.zw);
-//    g_pos = gl_Position.xy;
+    //    g_pos = gl_Position.xy;
     g_pos = ndc_a - normal_a;
     EmitVertex();
     EndPrimitive();
@@ -129,7 +129,7 @@ void main()
     g_line_width = line_width_a;
     g_line_length = line_length * 0.5;
     gl_Position = vec4((ndc_b + normal_b + extension) * gl_in[1].gl_Position.w, gl_in[1].gl_Position.zw);
-//    g_pos = gl_Position.xy;
+    //    g_pos = gl_Position.xy;
     g_pos = ndc_b + normal_b + extension;
     EmitVertex();
 
@@ -138,7 +138,7 @@ void main()
     g_line_width = line_width_a;
     g_line_length = line_length * 0.5;
     gl_Position = vec4((ndc_b - normal_b + extension) * gl_in[1].gl_Position.w, gl_in[1].gl_Position.zw);
-//    g_pos = gl_Position.xy;
+    //    g_pos = gl_Position.xy;
     g_pos = ndc_b - normal_b + extension;
     EmitVertex();
 
@@ -147,16 +147,16 @@ void main()
     g_line_width = line_width_b;
     g_line_length = line_length * 0.5;
     gl_Position = vec4((ndc_b + normal_b) * gl_in[1].gl_Position.w, gl_in[1].gl_Position.zw);
-//    g_pos = gl_Position.xy;
+    //    g_pos = gl_Position.xy;
     g_pos = ndc_b + normal_b;
     EmitVertex();
-    
+
     g_u = -line_width_b;
     g_v = -line_length * 0.5;
     g_line_width = line_width_b;
     g_line_length = line_length * 0.5;
     gl_Position = vec4((ndc_b - normal_b) * gl_in[1].gl_Position.w, gl_in[1].gl_Position.zw);
-//    g_pos = gl_Position.xy;
+    //    g_pos = gl_Position.xy;
     g_pos = ndc_b - normal_b;
     EmitVertex();
     EndPrimitive();

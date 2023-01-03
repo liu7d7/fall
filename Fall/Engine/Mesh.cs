@@ -14,6 +14,7 @@ namespace Fall.Engine
     private readonly vbo _vbo;
     private bool _building;
     private int _index;
+    private int _tris;
     private int _vertex;
 
     public mesh(draw_mode drawMode, shader shader, bool @static, params vao.attrib[] attribs)
@@ -65,24 +66,6 @@ namespace Fall.Engine
       return this;
     }
 
-    public mesh Float3(Matrix4 transform, float p0, float p1, float p2)
-    {
-      Vector4 pos = new(p0, p1, p2, 1);
-      pos.Transform(transform);
-      _vbo.Put(pos.X);
-      _vbo.Put(pos.Y);
-      _vbo.Put(pos.Z);
-      return this;
-    }
-
-    public mesh Float3(Vector3 p0)
-    {
-      _vbo.Put(p0.X);
-      _vbo.Put(p0.Y);
-      _vbo.Put(p0.Z);
-      return this;
-    }
-
     public mesh Float4(float p0, float p1, float p2, float p3)
     {
       _vbo.Put(p0);
@@ -123,6 +106,7 @@ namespace Fall.Engine
       _ibo.Put(p1);
       _ibo.Put(p2);
       _index += 3;
+      _tris++;
     }
 
     public void Quad(int p0, int p1, int p2, int p3)
@@ -134,6 +118,7 @@ namespace Fall.Engine
       _ibo.Put(p3);
       _ibo.Put(p0);
       _index += 6;
+      _tris += 2;
     }
 
     public void Begin()
@@ -143,6 +128,7 @@ namespace Fall.Engine
       {
         _vbo.Clear();
         _ibo.Clear();
+        _tris = 0;
       }
 
       _vertex = 0;
@@ -176,7 +162,7 @@ namespace Fall.Engine
       if (_index <= 0) return;
       gl_state_manager.SaveState();
       gl_state_manager.EnableBlend();
-      if (render_system.Rendering3d)
+      if (glh.Rendering3d)
         gl_state_manager.EnableDepth();
       else
         gl_state_manager.DisableDepth();
@@ -190,6 +176,7 @@ namespace Fall.Engine
       vbo.Unbind();
       vao.Unbind();
       gl_state_manager.RestoreState();
+      fall.Tris += _tris;
     }
 
     public void RenderInstanced(int numInstances)
@@ -199,7 +186,7 @@ namespace Fall.Engine
       if (_index <= 0 || numInstances <= 0) return;
       gl_state_manager.SaveState();
       gl_state_manager.EnableBlend();
-      if (render_system.Rendering3d)
+      if (glh.Rendering3d)
         gl_state_manager.EnableDepth();
       else
         gl_state_manager.DisableDepth();
@@ -213,6 +200,7 @@ namespace Fall.Engine
       vbo.Unbind();
       vao.Unbind();
       gl_state_manager.RestoreState();
+      fall.Tris += _tris * numInstances;
     }
 
     public sealed class draw_mode

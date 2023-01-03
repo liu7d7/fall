@@ -6,13 +6,12 @@ namespace Fall.Engine
   {
     public enum attrib
     {
-      FLOAT1 = 1,
-      FLOAT2 = 2,
-      FLOAT3 = 3,
-      FLOAT4 = 4
+      Float1 = 1,
+      Float2 = 2,
+      Float3 = 3,
+      Float4 = 4
     }
 
-    private static int _active;
     private readonly int _handle;
 
     public vao(params attrib[] attribs)
@@ -34,15 +33,12 @@ namespace Fall.Engine
 
     public void Bind()
     {
-      if (_handle == _active) return;
       GL.BindVertexArray(_handle);
-      _active = _handle;
     }
 
     public static void Unbind()
     {
       GL.BindVertexArray(0);
-      _active = 0;
     }
   }
 }

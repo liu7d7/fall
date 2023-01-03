@@ -6,18 +6,17 @@ namespace Fall.Engine
   // taken from https://github.com/opentk/LearnOpenTK/blob/master/Common/Shader.cs
   public class shader
   {
-    private static int _active;
     private readonly Dictionary<string, int> _uniformLocations;
     public readonly int Handle;
 
     public shader(string vertPath, string fragPath, string geomPath = null)
     {
-      string shaderSource = File.ReadAllText(vertPath);
+      string shaderSource = File.ReadAllText($"Resource/Shader/{vertPath}.vert");
       int vertexShader = GL.CreateShader(ShaderType.VertexShader);
       GL.ShaderSource(vertexShader, shaderSource);
       CompileShader(vertexShader);
 
-      shaderSource = File.ReadAllText(fragPath);
+      shaderSource = File.ReadAllText($"Resource/Shader/{fragPath}.frag");
       int fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
       GL.ShaderSource(fragmentShader, shaderSource);
       CompileShader(fragmentShader);
@@ -25,20 +24,17 @@ namespace Fall.Engine
       int geometryShader = -1;
       if (geomPath != null)
       {
-        shaderSource = File.ReadAllText(geomPath);
+        shaderSource = File.ReadAllText($"Resource/Shader/{geomPath}.geom");
         geometryShader = GL.CreateShader(ShaderType.GeometryShader);
         GL.ShaderSource(geometryShader, shaderSource);
         CompileShader(geometryShader);
       }
-      
+
       Handle = GL.CreateProgram();
 
       GL.AttachShader(Handle, vertexShader);
       GL.AttachShader(Handle, fragmentShader);
-      if (geomPath != null)
-      {
-        GL.AttachShader(Handle, geometryShader);
-      }
+      if (geomPath != null) GL.AttachShader(Handle, geometryShader);
 
       LinkProgram(Handle);
 
@@ -86,20 +82,12 @@ namespace Fall.Engine
 
     public void Bind()
     {
-      if (Handle == _active) return;
       GL.UseProgram(Handle);
-      _active = Handle;
     }
 
     public static void Unbind()
     {
       GL.UseProgram(0);
-      _active = 0;
-    }
-
-    public int GetAttribLocation(string attribName)
-    {
-      return GL.GetAttribLocation(Handle, attribName);
     }
 
     public void SetInt(string name, int data)
@@ -142,18 +130,6 @@ namespace Fall.Engine
       if (!_uniformLocations.ContainsKey(name)) return;
       Bind();
       GL.Uniform4(_uniformLocations[name], data);
-    }
-
-    public void SetArrMatrix4(string loc, ref Matrix4[] data)
-    {
-      Bind();
-      GL.UniformMatrix4(_uniformLocations[loc + "[0]"], data.Length, true, ref data[0].Row0.X);
-    }
-
-    public void SetArrVector3(string loc, ref Vector3[] data)
-    {
-      Bind();
-      GL.Uniform3(_uniformLocations[loc + "[0]"], data.Length, ref data[0].X);
     }
   }
 }

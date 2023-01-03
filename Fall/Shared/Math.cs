@@ -1,22 +1,5 @@
-using Fall.Engine;
-
 namespace Fall.Shared
 {
-  public static class util
-  {
-    public static readonly float SQRT2 = MathF.Sqrt(2);
-
-    public static float Lerp(float start, float end, float delta)
-    {
-      return start + (end - start) * delta;
-    }
-
-    public static void Clamp(ref int val, int start, int end)
-    {
-      val = Math.Min(Math.Max(val, start), end);
-    }
-  }
-
   public static class math
   {
     public static float FastAtan2(float y, float x)
@@ -62,6 +45,18 @@ namespace Fall.Shared
         f -= 360f;
       else if (f < -180f) f += 360f;
       return f;
+    }
+
+    public static readonly float SQRT2 = MathF.Sqrt(2);
+
+    public static float Lerp(float start, float end, float delta)
+    {
+      return start + (end - start) * delta;
+    }
+
+    public static void Clamp(ref int val, int start, int end)
+    {
+      val = Math.Min(Math.Max(val, start), end);
     }
   }
 }

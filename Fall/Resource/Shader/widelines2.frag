@@ -16,7 +16,7 @@ out vec4 frag_color;
 void main()
 {
     if (g_compare.x == -1 && g_compare.y == -1)
-    { 
+    {
         /* We render a quad that is fattened by r, giving total width of the line to be w+r. We want smoothing to happen
            around w, so that the edge is properly smoothed out. As such, in the smoothstep function we have:
            Far edge   : 1.0                                          = (w+r) / (w+r)

@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using StbImageSharp;
@@ -5,16 +6,15 @@ using StbImageSharp;
 namespace Fall.Engine
 {
   // taken from https://github.com/opentk/LearnOpenTK/blob/master/Common/Texture.cs
-  public class texture
+  public class image2d
   {
-    private static int _active;
-    private static readonly Dictionary<int, texture> _textures = new();
+    private static readonly Dictionary<int, image2d> _textures = new();
     private readonly int _handle;
-    public readonly float Height;
 
+    public readonly float Height;
     public readonly float Width;
 
-    private texture(int glHandle, int width, int height)
+    private image2d(int glHandle, int width, int height)
     {
       _handle = glHandle;
       Width = width;
@@ -22,7 +22,7 @@ namespace Fall.Engine
       _textures[glHandle] = this;
     }
 
-    public static texture load_from_file(string path)
+    public static image2d FromFile(string path)
     {
       int handle = GL.GenTexture();
 
@@ -53,10 +53,10 @@ namespace Fall.Engine
 
       GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
 
-      return new texture(handle, image.Width, image.Height);
+      return new image2d(handle, image.Width, image.Height);
     }
 
-    public static texture load_from_buffer(byte[] buffer, int width, int height, PixelFormat format,
+    public static image2d FromBuffer(byte[] buffer, int width, int height, PixelFormat format,
       PixelInternalFormat internalFormat, TextureMinFilter minFilter = TextureMinFilter.LinearMipmapLinear,
       TextureMagFilter magFilter = TextureMagFilter.Linear)
     {
@@ -65,7 +65,6 @@ namespace Fall.Engine
       GL.ActiveTexture(TextureUnit.Texture0);
       GL.BindTexture(TextureTarget.Texture2D, handle);
 
-#pragma warning disable CA1416
       GL.TexImage2D(TextureTarget.Texture2D,
         0,
         internalFormat,
@@ -84,45 +83,24 @@ namespace Fall.Engine
 
       GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
 
-      return new texture(handle, width, height);
-#pragma warning restore CA1416
+      return new image2d(handle, width, height);
     }
 
     public void Bind(TextureUnit unit)
     {
-      if (_handle == _active) return;
       GL.ActiveTexture(unit);
       GL.BindTexture(TextureTarget.Texture2D, _handle);
-      _active = _handle;
     }
 
     public static void Bind(int id, TextureUnit unit)
     {
-      if (id == _active) return;
       GL.ActiveTexture(unit);
       GL.BindTexture(TextureTarget.Texture2D, id);
-      _active = id;
-    }
-
-    public static void bind_cubemap(int id)
-    {
-      if (id == _active) return;
-      GL.ActiveTexture(TextureUnit.Texture0);
-      GL.BindTexture(TextureTarget.TextureCubeMap, id);
-      _active = id;
     }
 
     public static void Unbind()
     {
       GL.BindTexture(TextureTarget.Texture2D, 0);
-      _active = 0;
-    }
-
-    public static Vector2 current_bounds()
-    {
-      if (!_textures.ContainsKey(_active)) return new Vector2(1, 1);
-      texture current = _textures[_active];
-      return new Vector2(current.Width, current.Height);
     }
   }
 }

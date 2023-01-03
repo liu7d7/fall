@@ -1,14 +1,10 @@
 ﻿#version 430 core
 
 layout(location = 0) in vec3 pos;
-layout(location = 1) in vec3 normal;
-layout(location = 2) in vec2 texCoord;
-layout(location = 3) in vec4 color;
+layout(location = 1) in vec2 color;
 
 out vec4 v_Color;
-out vec3 v_Normal;
 out vec2 v_TexCoords;
-out vec3 v_FragPos;
 
 #define MAX 1024
 
@@ -22,8 +18,5 @@ void main() {
     mat4 model = _model[gl_InstanceID];
     vec4 final = model * vec4(pos, 1.0);
     gl_Position = final * _lookAt * _proj;
-    v_TexCoords = texCoord;
-    v_Color = color;
-    v_Normal = normal;
-    v_FragPos = final.xyz;
+    v_Color = vec4(vec3(color.r), color.g);
 }

@@ -27,8 +27,8 @@ namespace Fall
 
       GLFW.Init();
       GLFW.WindowHint(WindowHintInt.Samples, 4);
-      using fall window = new(gameWindowSettings, nativeWindowSettings);
-      window.Run();
+      using fall fall = new(gameWindowSettings, nativeWindowSettings);
+      fall.Run();
     }
   }
 }

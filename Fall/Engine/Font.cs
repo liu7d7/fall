@@ -12,7 +12,7 @@ namespace Fall.Engine
     private static readonly StbTrueType.stbtt_packedchar[] _chars;
 
     public static int Height;
-    public static texture Texture;
+    public static image2d Image2d;
 
     // I have absolutely no idea how to use unsafe :((
     static unsafe font()
@@ -47,18 +47,18 @@ namespace Fall.Engine
       StbTrueType.stbtt_GetFontVMetrics(fontInfo, &asc, null, null);
       _ascent = asc * StbTrueType.stbtt_ScaleForPixelHeight(fontInfo, height);
 
-      Texture = texture.load_from_buffer(bitmap, 2048, 2048, PixelFormat.Red, PixelInternalFormat.R8,
+      Image2d = image2d.FromBuffer(bitmap, 2048, 2048, PixelFormat.Red, PixelInternalFormat.R8,
         TextureMinFilter.Nearest, TextureMagFilter.Nearest);
     }
 
     public static void Bind()
     {
-      Texture.Bind(TextureUnit.Texture0);
+      Image2d.Bind(TextureUnit.Texture0);
     }
 
     public static void Unbind()
     {
-      texture.Unbind();
+      image2d.Unbind();
     }
 
     public static void Draw(mesh mesh, string text, float x, float y, uint color, bool shadow, float scale = 1.0f)
@@ -66,10 +66,10 @@ namespace Fall.Engine
       int length = text.Length;
       float drawX = x;
       float drawY = y - _ascent * scale;
-      float alpha = ((color >> 24) & 0xFF) / 255.0f;
-      float red = ((color >> 16) & 0xFF) / 255.0f;
-      float green = ((color >> 8) & 0xFF) / 255.0f;
-      float blue = (color & 0xFF) / 255.0f;
+      float a = ((color >> 24) & 0xFF) / 255.0f;
+      float r = ((color >> 16) & 0xFF) / 255.0f;
+      float g = ((color >> 8) & 0xFF) / 255.0f;
+      float b = (color & 0xFF) / 255.0f;
       string lower = text.ToLower();
       for (int i = 0; i < length; i++)
       {
@@ -83,9 +83,9 @@ namespace Fall.Engine
           if (Shared.fmt.VALUES.TryGetValue(next, out fmt fmt))
           {
             uint newColor = fmt.Color;
-            red = ((newColor >> 16) & 0xFF) / 255.0f;
-            green = ((newColor >> 8) & 0xFF) / 255.0f;
-            blue = (newColor & 0xFF) / 255.0f;
+            r = ((newColor >> 16) & 0xFF) / 255.0f;
+            g = ((newColor >> 8) & 0xFF) / 255.0f;
+            b = (newColor & 0xFF) / 255.0f;
           }
 
           continue;
@@ -102,25 +102,21 @@ namespace Fall.Engine
 
         if (shadow)
         {
-          int j1 = mesh.Float3(dxs + 1, dys - 1, 1).Float3(0, 0, 1).Float2(c.x0 * _ipw, c.y0 * _iph)
-            .Float4(red * 0.125f, green * 0.125f, blue * 0.125f, alpha).Next();
-          int j2 = mesh.Float3(dxs + 1, dy1S - 1, 1).Float3(0, 0, 1).Float2(c.x0 * _ipw, c.y1 * _iph)
-            .Float4(red * 0.125f, green * 0.125f, blue * 0.125f, alpha).Next();
-          int j3 = mesh.Float3(dx1S + 1, dy1S - 1, 1).Float3(0, 0, 1).Float2(c.x1 * _ipw, c.y1 * _iph)
-            .Float4(red * 0.125f, green * 0.125f, blue * 0.125f, alpha).Next();
-          int j4 = mesh.Float3(dx1S + 1, dys - 1, 1).Float3(0, 0, 1).Float2(c.x1 * _ipw, c.y0 * _iph)
-            .Float4(red * 0.125f, green * 0.125f, blue * 0.125f, alpha).Next();
+          int j1 = mesh.Float3(dxs + 1, dys - 1, 1).Float2(c.x0 * _ipw, c.y0 * _iph)
+            .Float4(r * 0.125f, g * 0.125f, b * 0.125f, a).Next();
+          int j2 = mesh.Float3(dxs + 1, dy1S - 1, 1).Float2(c.x0 * _ipw, c.y1 * _iph)
+            .Float4(r * 0.125f, g * 0.125f, b * 0.125f, a).Next();
+          int j3 = mesh.Float3(dx1S + 1, dy1S - 1, 1).Float2(c.x1 * _ipw, c.y1 * _iph)
+            .Float4(r * 0.125f, g * 0.125f, b * 0.125f, a).Next();
+          int j4 = mesh.Float3(dx1S + 1, dys - 1, 1).Float2(c.x1 * _ipw, c.y0 * _iph)
+            .Float4(r * 0.125f, g * 0.125f, b * 0.125f, a).Next();
           mesh.Quad(j1, j2, j3, j4);
         }
 
-        int k1 = mesh.Float3(dxs, dys, 0).Float3(0, 0, 1).Float2(c.x0 * _ipw, c.y0 * _iph)
-          .Float4(red, green, blue, alpha).Next();
-        int k2 = mesh.Float3(dxs, dy1S, 0).Float3(0, 0, 1).Float2(c.x0 * _ipw, c.y1 * _iph)
-          .Float4(red, green, blue, alpha).Next();
-        int k3 = mesh.Float3(dx1S, dy1S, 0).Float3(0, 0, 1).Float2(c.x1 * _ipw, c.y1 * _iph)
-          .Float4(red, green, blue, alpha).Next();
-        int k4 = mesh.Float3(dx1S, dys, 0).Float3(0, 0, 1).Float2(c.x1 * _ipw, c.y0 * _iph)
-          .Float4(red, green, blue, alpha).Next();
+        int k1 = mesh.Float3(dxs, dys, 0).Float2(c.x0 * _ipw, c.y0 * _iph).Float4(r, g, b, a).Next();
+        int k2 = mesh.Float3(dxs, dy1S, 0).Float2(c.x0 * _ipw, c.y1 * _iph).Float4(r, g, b, a).Next();
+        int k3 = mesh.Float3(dx1S, dy1S, 0).Float2(c.x1 * _ipw, c.y1 * _iph).Float4(r, g, b, a).Next();
+        int k4 = mesh.Float3(dx1S, dys, 0).Float2(c.x1 * _ipw, c.y0 * _iph).Float4(r, g, b, a).Next();
         mesh.Quad(k1, k2, k3, k4);
 
         drawX += c.xadvance * scale;

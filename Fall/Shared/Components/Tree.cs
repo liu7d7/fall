@@ -2,7 +2,7 @@
 {
   public class tree : fall_obj.component
   {
-    public tree() : base(type.TREE)
+    public tree() : base(fall_obj.comp_type.Tree)
     {
     }
 
@@ -10,7 +10,7 @@
     {
       base.Update(objIn);
 
-      if (fall.InView > 900) return;
+      if (fall.InView > snow.MODEL_COUNT * 400) return;
 
       fall_obj obj = new()
       {
@@ -24,4 +24,4 @@
       fall.World.Objs.Add(obj);
     }
   }
-}
+} 
